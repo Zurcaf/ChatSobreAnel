@@ -21,9 +21,11 @@ int main(void)
     n = getaddrinfo("127.0.0.1", "58002", &hints, &res);
     if (n != 0) /*error*/
         exit(1);
+
     n = connect(fd, res->ai_addr, res->ai_addrlen);
     if (n == -1) /*error*/
         exit(1);
+
     ptr = strcpy(buffer, "OLA!\n");
     nbytes = 128;
     nleft = nbytes;
