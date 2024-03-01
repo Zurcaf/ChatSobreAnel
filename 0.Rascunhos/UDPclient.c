@@ -35,7 +35,7 @@ int main(void)
 
     printf("Connected\n");
     //n = sendto(fd, "UNREG 112 12 ", 32, 0, res->ai_addr, res->ai_addrlen);// UNREG 112 05   ///NODES 112
-    n = sendto(fd, "NODES 112 ", 32, 0, res->ai_addr, res->ai_addrlen);
+    n = sendto(fd, "NODES 112", 32, 0, res->ai_addr, res->ai_addrlen);
 
     if (n == -1)
     { /*error*/
@@ -44,6 +44,7 @@ int main(void)
     }
 
     freeaddrinfo(res);
+    
     addrlen = sizeof(addr);
     n = recvfrom(fd, buffer, 128, 0, &addr, &addrlen);
 
