@@ -19,14 +19,14 @@ int isValidIPAddress(const char *ipAddress)
     // Check if the IP length is reasonable
     if (strlen(ipAddress) > MAX_IP_LENGTH)
     {
-        return 0;
+        return 1;
     }
 
     for (int i = 0; ipAddress[i] != '\0'; i++)
     {
         if (!isdigit(ipAddress[i]) && ipAddress[i] != '.')
         {
-            return 0;
+            return 1;
         }
 
         if (ipAddress[i] == '.')
@@ -35,13 +35,13 @@ int isValidIPAddress(const char *ipAddress)
 
             if (i == 0 || ipAddress[i + 1] == '\0')
             {
-                return 0;
+                return 1;
             }
 
             num = atoi(ipAddress + last + 1);
             if (num < 0 || num > 255)
             {
-                return 0;
+                return 1;
             }
 
             last = i;
@@ -49,12 +49,12 @@ int isValidIPAddress(const char *ipAddress)
 
         if (dots > 3 || (i > 0 && ipAddress[i] == '.' && ipAddress[i - 1] == '.'))
         {
-            return 0;
+            return 1;
         }
 
         if (i - last > 4)
         {
-            return 0;
+            return 1;
         }
 
         if (isdigit(ipAddress[i]) && ipAddress[i + 1] == '\0')
@@ -62,17 +62,17 @@ int isValidIPAddress(const char *ipAddress)
             num = atoi(ipAddress + last + 1);
             if (num < 0 || num > 255)
             {
-                return 0;
+                return 1;
             }
         }
     }
 
     if (dots != 3)
     {
-        return 0;
+        return 1;
     }
 
-    return 1;
+    return 0;
 }
 
 int main()
@@ -96,7 +96,7 @@ int main()
         sscanf(input, "%s %s %d %s %d", COR, IP, &TCP, regIP, &regUDP);
 
         // Check if the entered IP address is valid
-        if (!isValidIPAddress(IP))
+        if (isValidIPAddress(IP))
         {
             printf("The entered IP address is not in a valid format.\n");
             continue;
