@@ -11,6 +11,8 @@
 #define MAX_IP_LENGTH 15 // IPv4 has at most 15 characters
 
 int isValidIPAddress(const char *ipAddress)
+
+
 {
     int num, dots = 0;
     int segments = 0;
@@ -73,6 +75,34 @@ int isValidIPAddress(const char *ipAddress)
     }
 
     return 0;
+}
+
+int countWords(char *line)
+{
+    int count = 0;
+    bool inWord = false;
+
+    while (*line)
+    {
+        if (*line == ' ' || *line == '\t' || *line == '\n')
+        {
+            // Whitespace character, transition out of a word
+            inWord = false;
+        }
+        else
+        {
+            // Non-whitespace character, transition into a word
+            if (!inWord)
+            {
+                count++;
+                inWord = true;
+            }
+        }
+
+        line++;
+    }
+
+    return count;
 }
 
 int main()
