@@ -18,7 +18,7 @@ void fileCheck(FILE *filePointer, char *fileName)
     }
 }
 
-void argsCheck(int argc, char *argv[], char *IP, int *TCP, char *regIP, int *regUDP)
+void argsCheck(int argc, char *argv[], char *IP, int *TCP, char *regIP, char *regUDP)
 {
     //Verificação do número de argumentos (2 ou 4) porque 
     //  regIP e regUDP são os parametros do servidor de registo e
@@ -38,6 +38,7 @@ void argsCheck(int argc, char *argv[], char *IP, int *TCP, char *regIP, int *reg
     }
 
     strcpy(IP, argv[1]);
+    
     //Verificação do TCP
     *TCP = atoi(argv[2]);
     if (*TCP < 1024 || *TCP > 65535)

@@ -2,7 +2,6 @@
 //  Aqui localizam-se o main do programa, onde são invocadas as funções da aplicação ChatOnRing.
 
 #include "../hed/main.h"
-#include "../hed/interface.h"
 
 // Invocação da aplicação pelo comando:
 //  COR IP TCP regIP regUDP
@@ -14,7 +13,7 @@ int main(int argc, char *argv[])
     int TCP = 0;
 
     char regIP[MAX_IP_LENGTH] = "193.136.138.142";
-    int regUDP = 59000;
+    char* regUDP = "59000";
 
     int i = 0;
     char *token;
@@ -22,8 +21,11 @@ int main(int argc, char *argv[])
     int argCount = 0;
     bool flag_exit = true, flag_arg = true;
 
+    NodeInfo *personal = (NodeInfo *)malloc(sizeof(NodeInfo));
+    memoryCheck(personal);
+
     // Verifing the arguments passed to the application
-    argsCheck(argc, argv, IP, &TCP, regIP, &regUDP);
+    argsCheck(argc, argv, IP, &TCP, regIP, regUDP);
 
     char input[256]; // Maximum input length
     printf("------------------------------------------------------------\n");
@@ -31,7 +33,7 @@ int main(int argc, char *argv[])
     printf("IP: %s\n", IP);
     printf("TCP: %d\n", TCP);
     printf("regIP: %s\n", regIP);
-    printf("regUDP: %d\n", regUDP);
+    printf("regUDP: %s\n", regUDP);
     printf("------------------------------------------------------------\n");
     printf("Available comands:\njoin (j) ring id\ndirect join (dj) id succid succIP succTCP\nchord (c)\nremove chord (rc)\nshow topology (st)\nshow routing (sr) dest\nshow path (sp) dest\nshow forwarding (sf)\nmessage (m) dest message\nleave (l)\nexit (x)\n");
     printf("------------------------------------------------------------\n");
@@ -138,43 +140,41 @@ int main(int argc, char *argv[])
 //Implementação dos comandos da interface com o utlizador (4.2)
 bool join(char *IP, int TCP, char *regIP, char *regUDP, char *ring, char *id)
 {
-    printf("Join command\n");
-
     struct sockaddr addr;
     socklen_t addrlen;
     ssize_t n;
     char buffer[128];
 
     struct addrinfo hints, *res;
-    int fd, errcode;
+    int fd, errcode, nchars;
     
     //socket creation and verification
     fd = socket(AF_INET, SOCK_DGRAM, 0); // UDP socket
     if (fd == -1) /*error*/
         exit(1);
 
-    memset(&hints, 0, sizeof hints);
+    memset(&hints, 0, sizeof(hints));
     hints.ai_family = AF_INET;      // IPv4
     hints.ai_socktype = SOCK_DGRAM; // UDP socket
     
-    // errcode = getaddrinfo("tejo.tecnico.ulisboa.pt", "59000", &hints, &res);
-    errcode = getaddrinfo(regUDP, regIP, &hints, &res);
+    errcode = getaddrinfo("tejo.tecnico.ulisboa.pt", "59000", &hints, &res);
+    // errcode = getaddrinfo(regIP, regUDP, &hints, &res);
     if (errcode != 0)
     { /*error*/
         printf("Error connecting");
         exit(1);
     }
 
-    // //inicializar buffer
-    // for (int i = 0; i< strlen(buffer); i++)
-    // {
-    //     buffer[i] = '\0';
-    // }
+    //inicializar buffer
+    for (int i = 0; i< strlen(buffer); i++)
+    {
+        buffer[i] = '\0';
+    }
 
-    // printf("Connected1\n");
-    // printf("%s %s %s %d\n", ring, id, IP, tcpport);
-    // sprintf(buffer, "NODES %s", ring);
-    // n = sendto(fd, buffer, 32, 0, res->ai_addr, res->ai_addrlen);
+    
+    sprintf(buffer, "NODES %s", ring);
+    nchars = strlen(buffer);
+    n = sendto(fd, buffer, nchars, 0, res->ai_addr, res->ai_addrlen);
 
     //inicializar buffer
     for (int i = 0; i< strlen(buffer); i++)
@@ -184,19 +184,21 @@ bool join(char *IP, int TCP, char *regIP, char *regUDP, char *ring, char *id)
 
     addrlen = sizeof(addr);
     n = recvfrom(fd, buffer, 500, 0, &addr, &addrlen);
+    if (n == -1) /*error*/
+        exit(1);
+    
+    buffer[n] = '\0';
+    printf("echo: %s\n", buffer);
 
     for (int i = 0; i< strlen(buffer); i++)
     {
         buffer[i] = '\0';
     }
 
-    // n = sendto(fd, "UNREG 112 12 ", 32, 0, res->ai_addr, res->ai_addrlen);  // UNREG 112 05   ///NODES 112
-    // n = sendto(fd, "REG 067 01 142.0.0.1 2000", 32, 0, res->ai_addr, res->ai_addrlen);
-    printf("Connected2\n");
-    printf("%s %s %s %d\n", ring, id, IP, TCP);
+    // = sendto(fd, "UNREG 112 12 ", 32, 0, res->ai_addr, res->ai_addrlen);  // UNREG 112 05   ///NODES 112
     sprintf(buffer, "REG %s %s %s %d", ring, id, IP, TCP);
-
-    n = sendto(fd, buffer, 32, 0, res->ai_addr, res->ai_addrlen);
+    nchars = strlen(buffer);
+    n = sendto(fd, buffer, nchars, 0, res->ai_addr, res->ai_addrlen);
     if (n == -1)
     { /*error*/
         printf("Error messaging.");

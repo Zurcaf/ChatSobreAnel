@@ -8,7 +8,6 @@
 
 int main(void)
 {
-    printf("hello\n");
     struct addrinfo hints, *res;
     int fd, newfd, errcode;
     ssize_t n, nw;
@@ -55,5 +54,8 @@ int main(void)
         }
         close(newfd);
     }
-    // freeaddrinfo(res);close(fd);exit(0);
+
+    // freeaddrinfo(res);
+    // close(fd);
+    // exit(0);
 }

@@ -6,7 +6,7 @@
 #include <arpa/inet.h>
 #include <sys/types.h>
 #include <sys/socket.h>
-
+#include <sys/select.h>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -21,7 +21,6 @@
 #define MAX_ARGUMENTS 7
 
 #define WORD_LEN_MAX 70
-#define LINE_MAX 1000
 
 typedef struct _nodeInfo NodeInfo;
 
@@ -41,7 +40,7 @@ bool join(char *IP, int TCP, char *regIP, char *regUDP, char *ring, char *id);
 bool leave(char *IP, int TCP, char *regIP, int regUDP, char *ring, char *id);
 
 //verificações dos argumentos (quantidade e extensões)
-void argsCheck(int argc, char *argv[], char *IP, int *TCP, char *regIP, int *regUDP);
+void argsCheck(int argc, char *argv[], char *IP, int *TCP, char *regIP, char *regUDP);
 
 //verificação de endereço IP
 bool ValidIPAddress(const char *ipAddress);

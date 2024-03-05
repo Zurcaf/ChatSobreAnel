@@ -1,5 +1,5 @@
 ##Definir o compilador e suas flags
-CFLAGS= -Wall -std=c99 -g
+CFLAGS= -Wall
 CC = gcc
 
 #Definir os diretorios
