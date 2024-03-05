@@ -21,21 +21,15 @@
 #define WORD_LEN_MAX 70
 #define LINE_MAX 1000
 
-typedef struct _edge Edge;
+typedef struct _nodeInfo NodeInfo;
 
-typedef struct _edge
+typedef struct _nodeInfo
 {
-    int n2;
-    int wt;
-    Edge *next;
-} Edge;
+    char *id;
+    char *IP;
+    char *TCP;
+} NodeInfo;
 
-
-typedef struct graph
-{
-    int vertices, maxMode;
-    Edge **adj; 
-}graph;
 
 //include de outros ficheiros .h 
 #include "interface.h"
