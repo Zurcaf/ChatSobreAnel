@@ -25,6 +25,9 @@ $(BIN): $(OBJS) | $(BINDIR)
 $(OBJ)/auxFunc.o: $(SRC)/auxFunc.c $(HEAD)/main.h | $(OBJ)
 	$(CC) $(CFLAGS) -c $< -o $@
 
+$(OBJ)/interface.o: $(SRC)/interface.c $(HEAD)/main.h | $(OBJ)
+	$(CC) $(CFLAGS) -c $< -o $@
+
 #Compilar os arquivos
 $(OBJ)/%.o: $(SRC)/%.c $(HEAD)/%.h | $(OBJ)
 	$(CC) $(CFLAGS) -c $< -o $@

@@ -133,3 +133,93 @@ int main(int argc, char *argv[])
 
     return 0;
 }
+
+
+//Implementação dos comandos da interface com o utlizador (4.2)
+bool join(char *IP, int TCP, char *regIP, char *regUDP, char *ring, char *id)
+{
+    printf("Join command\n");
+
+    struct sockaddr addr;
+    socklen_t addrlen;
+    ssize_t n;
+    char buffer[128];
+
+    struct addrinfo hints, *res;
+    int fd, errcode;
+    
+    //socket creation and verification
+    fd = socket(AF_INET, SOCK_DGRAM, 0); // UDP socket
+    if (fd == -1) /*error*/
+        exit(1);
+
+    memset(&hints, 0, sizeof hints);
+    hints.ai_family = AF_INET;      // IPv4
+    hints.ai_socktype = SOCK_DGRAM; // UDP socket
+    
+    // errcode = getaddrinfo("tejo.tecnico.ulisboa.pt", "59000", &hints, &res);
+    errcode = getaddrinfo(regUDP, regIP, &hints, &res);
+    if (errcode != 0)
+    { /*error*/
+        printf("Error connecting");
+        exit(1);
+    }
+
+    // //inicializar buffer
+    // for (int i = 0; i< strlen(buffer); i++)
+    // {
+    //     buffer[i] = '\0';
+    // }
+
+    // printf("Connected1\n");
+    // printf("%s %s %s %d\n", ring, id, IP, tcpport);
+    // sprintf(buffer, "NODES %s", ring);
+    // n = sendto(fd, buffer, 32, 0, res->ai_addr, res->ai_addrlen);
+
+    //inicializar buffer
+    for (int i = 0; i< strlen(buffer); i++)
+    {
+        buffer[i] = '\0';
+    }
+
+    addrlen = sizeof(addr);
+    n = recvfrom(fd, buffer, 500, 0, &addr, &addrlen);
+
+    for (int i = 0; i< strlen(buffer); i++)
+    {
+        buffer[i] = '\0';
+    }
+
+    // n = sendto(fd, "UNREG 112 12 ", 32, 0, res->ai_addr, res->ai_addrlen);  // UNREG 112 05   ///NODES 112
+    // n = sendto(fd, "REG 067 01 142.0.0.1 2000", 32, 0, res->ai_addr, res->ai_addrlen);
+    printf("Connected2\n");
+    printf("%s %s %s %d\n", ring, id, IP, TCP);
+    sprintf(buffer, "REG %s %s %s %d", ring, id, IP, TCP);
+
+    n = sendto(fd, buffer, 32, 0, res->ai_addr, res->ai_addrlen);
+    if (n == -1)
+    { /*error*/
+        printf("Error messaging.");
+        exit(1);
+    }
+
+    freeaddrinfo(res);
+
+    for (int i = 0; i< strlen(buffer); i++)
+    {
+        buffer[i] = '\0';
+    }
+        
+    addrlen = sizeof(addr);
+    n = recvfrom(fd, buffer, 500, 0, &addr, &addrlen);
+
+    if (n == -1) /*error*/
+        exit(1);
+
+    buffer[n] = '\0';
+
+    printf("echo: %s\n", buffer);
+    close(fd);
+    
+    return true;
+}

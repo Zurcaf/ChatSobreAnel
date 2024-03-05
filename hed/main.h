@@ -2,17 +2,19 @@
 #define MAIN_H
 
 //includes de bibliotecas necessárias
+#include <netdb.h>
+#include <arpa/inet.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
 #include <ctype.h>
 #include <limits.h>
-
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netdb.h>
-
+#include <unistd.h>
 
 //definições de constantes
 #define MAX_IP_LENGTH 16 // IPv4 has at most 15 characters +1 for the null terminator
@@ -27,12 +29,16 @@ typedef struct _nodeInfo
 {
     char *id;
     char *IP;
-    char *TCP;
+    int *TCP;
 } NodeInfo;
 
 
 //include de outros ficheiros .h 
-#include "interface.h"
+//#include "interface.h"
+
+bool join(char *IP, int TCP, char *regIP, char *regUDP, char *ring, char *id);
+
+bool leave(char *IP, int TCP, char *regIP, int regUDP, char *ring, char *id);
 
 //verificações dos argumentos (quantidade e extensões)
 void argsCheck(int argc, char *argv[], char *IP, int *TCP, char *regIP, int *regUDP);
@@ -45,9 +51,6 @@ void memoryCheck(void *ptr);
 
 //verificar se o ficheiro foi bem aberto
 void fileCheck(FILE *filePointer, char *fileName);
-
-//libertação de toda a memoria alocada
-void freeMemory(int maxLen, graph **gs, int *palsOrder, int *dictLenCount, char *statsLocation, char *dictLocation, char *palsLocation);
 
 
 
