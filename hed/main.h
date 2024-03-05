@@ -15,7 +15,8 @@
 
 
 //definições de constantes
-#define MAX_IP_LENGTH 15 // IPv4 has at most 15 characters
+#define MAX_IP_LENGTH 16 // IPv4 has at most 15 characters +1 for the null terminator
+#define MAX_ARGUMENTS 7
 
 #define WORD_LEN_MAX 70
 #define LINE_MAX 1000
@@ -37,7 +38,7 @@ typedef struct graph
 }graph;
 
 //include de outros ficheiros .h 
-//#include "1Pals.h"
+#include "interface.h"
 
 //verificações dos argumentos (quantidade e extensões)
 void argsCheck(int argc, char *argv[], char *IP, int *TCP, char *regIP, int *regUDP);
@@ -53,5 +54,7 @@ void fileCheck(FILE *filePointer, char *fileName);
 
 //libertação de toda a memoria alocada
 void freeMemory(int maxLen, graph **gs, int *palsOrder, int *dictLenCount, char *statsLocation, char *dictLocation, char *palsLocation);
+
+
 
 #endif

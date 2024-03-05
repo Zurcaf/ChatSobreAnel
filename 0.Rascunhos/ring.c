@@ -117,9 +117,6 @@ int main()
     // Prompt user to enter all elements of the command
     printf("Enter the command: ");
 
-    while (1)
-    {
-
         fgets(input, sizeof(input), stdin);
 
         // Parse the input command
@@ -129,7 +126,7 @@ int main()
         if (isValidIPAddress(IP))
         {
             printf("The entered IP address is not in a valid format.\n");
-            continue;
+
         }
 
         // Check if the entered regIP is in a valid format
@@ -138,12 +135,9 @@ int main()
             if (!isValidIPAddress(regIP))
             {
                 printf("The entered regIP is not in a valid format.\n");
-                continue;
             }
         }
 
-        break;
-    }
     printf("\nApplication COR invoked with the following parameters:\n");
     printf("IP: %s\n", IP);
     printf("TCP: %d\n", TCP);
