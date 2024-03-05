@@ -41,5 +41,5 @@ clean:
 	rm -r $(BINDIR)/* $(OBJ)/*
 
 test:
-	$(BINDIR)/./COR 123 123
+	$(BINDIR)/./COR 127.0.0.1 58002
 

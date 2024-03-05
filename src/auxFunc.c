@@ -29,6 +29,7 @@ void argsCheck(int argc, char *argv[], char *IP, int *TCP, char *regIP, int *reg
         fprintf(stderr, "ERROR: wrong number of arguments!\n");
         exit(1);
     }
+    
     //Verificação do IP
     if (ValidIPAddress(argv[1]))
     {

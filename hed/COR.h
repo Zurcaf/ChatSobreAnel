@@ -15,7 +15,7 @@
 
 
 //definições de constantes
-#define MAX_IP_LENGTH 15 // IPv4 has at most 15 characters
+#define MAX_IP_LENGTH 16 // IPv4 has at most 15 characters +1 for the null terminator
 
 #define WORD_LEN_MAX 70
 #define LINE_MAX 1000
