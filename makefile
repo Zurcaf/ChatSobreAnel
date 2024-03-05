@@ -22,7 +22,7 @@ $(BIN): $(OBJS) | $(BINDIR)
 	$(CC) $(CFLAGS) $(OBJS) -o $@
 
 #Compilar arquivo auxFunc.c
-$(OBJ)/auxFunc.o: $(SRC)/auxFunc.c $(HEAD)/COR.h | $(OBJ)
+$(OBJ)/auxFunc.o: $(SRC)/auxFunc.c $(HEAD)/main.h | $(OBJ)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 #Compilar os arquivos
@@ -38,7 +38,8 @@ $(OBJ):
 	mkdir -p $(OBJ)
 
 clean:
-	rm -r $(BINDIR)/* $(OBJ)/*
+	rm -r $(BINDIR)
+	rm -r $(OBJ)
 
 test:
 	$(BINDIR)/./COR 127.0.0.1 58002

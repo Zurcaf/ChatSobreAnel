@@ -1,4 +1,4 @@
-#include "../hed/COR.h"
+#include "../hed/main.h"
 
 void memoryCheck(void *ptr)
 {
