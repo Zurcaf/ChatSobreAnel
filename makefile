@@ -10,7 +10,7 @@ HEAD = hed
 #Definir os arquivos
 SRCS = $(wildcard $(SRC)/*.c)
 OBJS = $(patsubst $(SRC)/%.c, $(OBJ)/%.o, $(SRCS))
-çfçkngod
+
 
 BINDIR = bin
 BIN = $(BINDIR)/COR
