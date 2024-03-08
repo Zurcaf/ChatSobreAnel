@@ -18,7 +18,6 @@ $(OBJ)/%.o: $(SRC)/%.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 
-
 $(BINDIR):
 	mkdir -p $(BINDIR)
 

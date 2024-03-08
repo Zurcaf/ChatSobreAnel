@@ -8,8 +8,8 @@
       "args": [],
       "stopAtEntry": false,
       "externalConsole": false,
-      "cwd": "/mnt/c/Users/Gonçalo/Desktop/3ºano/RCI/PROJECTO/ChatSobreAnel/codigo_Lazaro",
-      "program": "/mnt/c/Users/Gonçalo/Desktop/3ºano/RCI/PROJECTO/ChatSobreAnel/codigo_Lazaro/build/Debug/outDebug",
+      "cwd": "/home/afonso/Desktop/ChatSobreAnel/rascunhos",
+      "program": "/home/afonso/Desktop/ChatSobreAnel/rascunhos/build/Debug/outDebug",
       "MIMode": "gdb",
       "miDebuggerPath": "gdb",
       "setupCommands": [
