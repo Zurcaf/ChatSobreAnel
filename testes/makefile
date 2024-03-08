@@ -22,6 +22,8 @@ OBJS = $(patsubst $(SRC)/%.c, $(OBJ)/%.o, $(SRCS))
 
 2: $(SRC)/2UDPSocketSendTo.c
 	gcc $(CFLAGS) $(SRC)/2UDPSocketSendTo.c -o $(BINDIR)/2UDPSocketSendTo
+2_1: $(SRC)/2_1UDPSocketSendTo.c
+	gcc $(CFLAGS) $(SRC)/2_1UDPSocketSendTo.c -o $(BINDIR)/2_1UDPSocketSendTo
 
 3: $(SRC)/3UDPRecvfrom.c
 	gcc $(CFLAGS) $(SRC)/3UDPRecvfrom.c -o $(BINDIR)/3UDPRecvfrom
@@ -33,6 +35,9 @@ OBJS = $(patsubst $(SRC)/%.c, $(OBJ)/%.o, $(SRCS))
 
 1t: 1
 	./$(BINDIR)/1getAddrInfo
+
+2_1t: 2_1
+	./$(BINDIR)/2_1UDPSocketSendTo
 
 2t: 2
 	./$(BINDIR)/2UDPSocketSendTo

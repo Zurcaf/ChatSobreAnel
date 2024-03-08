@@ -1,17 +1,19 @@
 // test.c
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netdb.h>
 #include <arpa/inet.h>
-#include <string.h>
 
 int main(void)
 {
-struct addrinfo hints,*res,*p;
 int errcode;
 char buffer[INET_ADDRSTRLEN];
+
+struct addrinfo hints,*res,*p;
 struct in_addr *addr;
 
 memset(&hints,0,sizeof hints);

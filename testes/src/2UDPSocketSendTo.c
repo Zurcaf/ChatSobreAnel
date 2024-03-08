@@ -1,4 +1,4 @@
-//test.c
+// Hello message sent to tejo.tecnico.ulisboa.pt:58001
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/types.h>
@@ -9,21 +9,24 @@
 
 int main(void)
 {
-struct addrinfo hints, *res;
-struct sockaddr addr; // Use sockaddr_storage to accommodate both IPv4 and IPv6
-socklen_t addrlen;
-int fd,errcode;
-ssize_t n;
+int fd;
+
+int errcode;
 char buffer[128 + 1];
 
+struct addrinfo hints, *res;
+struct sockaddr addr;
+socklen_t addrlen;
+ssize_t n;
 
-fd=socket(AF_INET,SOCK_DGRAM,0);//UDP socket
+
+fd=socket(AF_INET,SOCK_DGRAM,0);
 if (fd == -1) /*error*/
         exit(1);
 
 memset(&hints,0,sizeof hints);
-hints.ai_family=AF_INET;//IPv4
-hints.ai_socktype=SOCK_DGRAM;//UDP socket
+hints.ai_family=AF_INET;
+hints.ai_socktype=SOCK_DGRAM;
 
 errcode=getaddrinfo("tejo.tecnico.ulisboa.pt","58001",&hints,&res);
 if (errcode != 0)
@@ -31,8 +34,6 @@ if (errcode != 0)
         printf("Error connecting");
         exit(1);
     }
-
-printf("Connected\n");
 
 n=sendto(fd,"Hello!\n",7,0,res->ai_addr,res->ai_addrlen);
 if (n == -1)
