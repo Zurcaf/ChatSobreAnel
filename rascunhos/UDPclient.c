@@ -35,7 +35,9 @@ int main(void)
         exit(1);
     }
 
-    // n = sendto(fd, "UNREG 112 12 ", 32, 0, res->ai_addr, res->ai_addrlen);  // UNREG 112 05   ///NODES 112
+    printf("Connected\n");
+
+    // n = sendto(fd, "UNREG 112", 32, 0, res->ai_addr, res->ai_addrlen);  // UNREG 112 05   ///NODES 112
     // n = sendto(fd, "REG 067 01 142.0.0.1 2000", 32, 0, res->ai_addr, res->ai_addrlen);
     // n = sendto(fd, "REG 067 02 140.0.0.1 2000", 32, 0, res->ai_addr, res->ai_addrlen);
     // n = sendto(fd, "REG 067 03 140.0.0.1 2000", 32, 0, res->ai_addr, res->ai_addrlen);
@@ -54,7 +56,6 @@ int main(void)
     
     addrlen = sizeof(addr);
     n = recvfrom(fd, buffer, 500, 0, &addr, &addrlen);
-
     if (n == -1) /*error*/
         exit(1);
 

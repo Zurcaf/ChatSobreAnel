@@ -67,7 +67,7 @@ int main(int argc, char *argv[])
             arguments[i] = (char *)malloc(strlen(token) + 1);
             memoryCheck(arguments[i]);
 
-            strcpy(arguments[i], token);
+            strcpy(arguments[i], token);Hello
             strcat(arguments[i], "\0");
 
             token = strtok(NULL, " ");

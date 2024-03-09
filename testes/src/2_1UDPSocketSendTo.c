@@ -1,4 +1,5 @@
-// Código para enviar uma mensagem UDP para um servidor e receber a resposta.
+// Código para enviar uma mensagem UDP para um servidor e esperar por uma resposta
+// Select usado para timeout
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -19,6 +20,8 @@ int main(void) {
     struct sockaddr addr;
     socklen_t addrlen;
     ssize_t n;
+
+    
 
     fd = socket(AF_INET, SOCK_DGRAM, 0);
     if (fd == -1) {
@@ -43,6 +46,31 @@ int main(void) {
     }
 
     freeaddrinfo(res);
+
+    //Para usar select
+    fd_set read_fds;
+    struct timeval timeout;
+
+    // Configurando o conjunto de descritores de arquivo para monitorar leitura no socket
+    FD_ZERO(&read_fds);
+    FD_SET(fd, &read_fds);
+
+    // Configurando o timeout para 5 segundos
+    timeout.tv_sec = 5;
+    timeout.tv_usec = 0;
+
+    // Usando select para esperar até que o socket esteja pronto para leitura
+    int selectResult = select(fd + 1, &read_fds, NULL, NULL, &timeout);
+
+    if (selectResult == -1) {
+        perror("Error in select");
+        exit(1);
+
+    } else if (selectResult == 0) {
+        // Timeout expirado
+        printf("Timeout occurred. No data received.\n");
+        exit(0);
+    }
 
     // Agora, o socket está pronto para leitura
     addrlen = sizeof(addr);
