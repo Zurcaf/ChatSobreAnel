@@ -22,12 +22,27 @@ OBJS = $(patsubst $(SRC)/%.c, $(OBJ)/%.o, $(SRCS))
 
 2: $(SRC)/2UDPSocketSendTo.c
 	gcc $(CFLAGS) $(SRC)/2UDPSocketSendTo.c -o $(BINDIR)/2UDPSocketSendTo
+
 2_1: $(SRC)/2_1UDPSocketSendTo.c
 	gcc $(CFLAGS) $(SRC)/2_1UDPSocketSendTo.c -o $(BINDIR)/2_1UDPSocketSendTo
 
 3: $(SRC)/3UDPRecvfrom.c
 	gcc $(CFLAGS) $(SRC)/3UDPRecvfrom.c -o $(BINDIR)/3UDPRecvfrom
 
+4: $(SRC)/4TCPSocketConnect.c
+	gcc $(CFLAGS) $(SRC)/4TCPSocketConnect.c -o $(BINDIR)/4TCPSocketConnect
+
+5: $(SRC)/5TCPWriteRead.c
+	gcc $(CFLAGS) $(SRC)/5TCPWriteRead.c -o $(BINDIR)/5TCPWriteRead
+
+10: $(SRC)/10TCPServer.c
+	gcc $(CFLAGS) $(SRC)/10TCPServer.c -o $(BINDIR)/10TCPServer
+
+11: $(SRC)/11TCPClient.c
+	gcc $(CFLAGS) $(SRC)/11TCPClient.c -o $(BINDIR)/11TCPClient
+
+12: $(SRC)/12UDPClient.c
+	gcc $(CFLAGS) $(SRC)/12UDPClient.c -o $(BINDIR)/12UDPClient
 
 #Testes de cada codigo
 0t: 0
@@ -45,9 +60,21 @@ OBJS = $(patsubst $(SRC)/%.c, $(OBJ)/%.o, $(SRCS))
 3t: 3
 	./$(BINDIR)/3UDPRecvfrom
 
+4t: 4
+	./$(BINDIR)/4TCPSocketConnect
+
+5t: 5
+	./$(BINDIR)/5TCPWriteRead
+
+10t: 10
+	./$(BINDIR)/10TCPServer
+
+11t: 11
+	./$(BINDIR)/11TCPClient
+
+12t: 12
+	./$(BINDIR)/12UDPClient
+
 
 clean:
-	rm $(BINDIR)/0getHostName
-	rm $(BINDIR)/1getAddrInfo
-	rm $(BINDIR)/2UDPSocketSendTo
-	rm $(BINDIR)/3UDPRecvfrom
+	rm $(BINDIR)/*
