@@ -5,11 +5,14 @@
       "name": "C/C++ Runner: Debug Session",
       "type": "cppdbg",
       "request": "launch",
-      "args": [],
+      "args": [
+        "127.0.0.1",
+        "58002"
+      ],
       "stopAtEntry": false,
       "externalConsole": false,
-      "cwd": "/home/afonso/Desktop/ChatSobreAnel/rascunhos",
-      "program": "/home/afonso/Desktop/ChatSobreAnel/rascunhos/build/Debug/outDebug",
+      "cwd": "${workspaceFolder}",
+      "program": "/home/afonso/Desktop/ChatSobreAnel/bin/COR",
       "MIMode": "gdb",
       "miDebuggerPath": "gdb",
       "setupCommands": [

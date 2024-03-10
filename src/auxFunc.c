@@ -1,5 +1,4 @@
 #include "../hed/main.h"
-#include "../hed/interface.h"
 
 void memoryCheck(void *ptr)
 {

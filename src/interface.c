@@ -3,17 +3,15 @@
 
 int inputCheck(char* input, int *inputCount, char** inputArray)
 {
-    int i = 0;
     *inputCount = 0;
     char *token;
-
 
     token = strtok(input, " ");
 
     if (token == NULL)
     {
         fprintf(stderr, "ERROR: wrong number of arguments!\n");
-        return (0);
+        return 0;
     }
 
     inputArray = (char **)malloc(MAX_ARGUMENTS * sizeof(char *));
@@ -24,7 +22,7 @@ int inputCheck(char* input, int *inputCount, char** inputArray)
     {
         if (token == NULL)
             break;
-        
+
         inputArray[*inputCount] = (char *)malloc(strlen(token) + 1);
         memoryCheck(inputArray[*inputCount]);
 
@@ -32,11 +30,12 @@ int inputCheck(char* input, int *inputCount, char** inputArray)
         strcat(inputArray[*inputCount], "\0");
 
         token = strtok(NULL, " ");
-        *inputCount++;
+        *inputCount+= 1;
     }
 
-    inputArray[i - 1][strlen(inputArray[i - 1]) - 1] = '\0'; // Remover o \n do último argumento
-    inputArray[i] = NULL;                                    // Marcar o final da lista de argumentos
+    
+    inputArray[*inputCount - 1][strlen(inputArray[*inputCount - 1]) - 1] = '\0'; // Remover o \n do último argumento
+    inputArray[*inputCount] = NULL;                                  // Marcar o final da lista de argumentos
 
     if (strcmp(inputArray[0], "join") == 0 || strcmp(inputArray[0], "j") == 0)
     {
@@ -47,18 +46,16 @@ int inputCheck(char* input, int *inputCount, char** inputArray)
             return (0);
         }
 
-
+        // verificação do formato dos argumentos para o join
         if (strlen(inputArray[1]) != 3 || strlen(inputArray[2]) != 2)
         {
-            fprintf(stderr, "ERROR: wrong format of the join arguments!\n");
-            return (0);
+            if ((isdigit(inputArray[1][0]) && isdigit(inputArray[1][1]) && isdigit(inputArray[1][2])))
+            {
+                if (isdigit(inputArray[2][0]) && isdigit(inputArray[2][1]))
+                    return (1);
+            }
         }
-     
-        if ((isdigit(inputArray[1][0]) && isdigit(inputArray[1][1]) && isdigit(inputArray[1][2])))
-        {
-            if (isdigit(inputArray[2][0]) && isdigit(inputArray[2][1]))
-                return (1);
-        }
+        
         fprintf(stderr, "ERROR: wrong format of the join arguments!\n");
         fprintf(stderr, "\tring formate: 000\n");
         fprintf(stderr, "\tid formate: 00\n");
@@ -71,9 +68,9 @@ int inputCheck(char* input, int *inputCount, char** inputArray)
         return (11);
     }
     
-    return (0);
-    fprintf(stderr, "ERROR: command not found!\n");
+    fprintf(stderr, "ERROR: command not found!\n\n");
     
+    return 0;
 }
 
 //Implementação dos comandos da interface com o utlizador (4.2)
@@ -162,5 +159,10 @@ bool join(char *IP, int TCP, char *regIP, int regUDP, char *ring, char *id)
     printf("echo: %s\n", buffer);
     close(fd);
     
+    return true;
+}
+
+bool leave()
+{
     return true;
 }
