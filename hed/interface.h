@@ -4,7 +4,9 @@
 //verificação do input e separação dos argumentos
 int inputCheck(char* input, int *inputCount, char** inputArray);
 
-bool join(char *IP, int TCP, char *regIP, int regUDP, char *ring, char *id);
+bool directJoin();
+
+bool join(NodeInfo personal, ServerInfo server, char** arguments);
 
 bool leave();
 

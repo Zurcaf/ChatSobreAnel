@@ -6,9 +6,6 @@
 
 int main(int argc, char *argv[])
 {
-    char regIP[MAX_IP_LENGTH] = "193.136.138.142";
-    int regUDP = 59000;
-
     int argumentCount = 0;
     char **arguments = NULL;
     
@@ -17,10 +14,15 @@ int main(int argc, char *argv[])
 
 
     char ring[3]="000";
+    ServerInfo server;
     NodeInfo personal;
     NodeInfo Succ;
     NodeInfo Succ2;
     NodeInfo Pred;
+
+    //inicializar server
+    strcpy(server.regIP, "193.136.138.142");
+    server.regUDP = 59000;
 
     //inicializar personal
     strcpy(personal.id, INIT_ID);
@@ -42,16 +44,20 @@ int main(int argc, char *argv[])
     strcpy(Pred.IP, INIT_IP);
     Pred.TCP = 0;
 
+    // Alocação de memória para os argumentos
+    arguments = (char **)malloc(MAX_ARGUMENTS * sizeof(char *));
+    memoryCheck(arguments);
+
     
     // Verifing the arguments passed to the application
-    argsCheck(argc, argv, personal.IP, &personal.TCP, regIP, &regUDP);
+    argsCheck(argc, argv, personal.IP, &personal.TCP, server.regIP, &server.regUDP);
 
     printf("------------------------------------------------------------\n");
     printf("Application COR invoked with the following parameters:\n");
     printf("IP: %s\n", personal.IP);
     printf("TCP: %d\n", personal.TCP);
-    printf("regIP: %s\n", regIP);
-    printf("regUDP: %d\n", regUDP);
+    printf("regIP: %s\n", server.regIP);
+    printf("regUDP: %d\n", server.regUDP);
     printf("------------------------------------------------------------\n");
     printf("Available comands:\njoin (j) ring id\ndirect join (dj) id succid succIP succTCP\nchord (c)\nremove chord (rc)\nshow topology (st)\nshow routing (sr) dest\nshow path (sp) dest\nshow forwarding (sf)\nmessage (m) dest message\nleave (l)\nexit (x)\n");
     printf("------------------------------------------------------------\n");
@@ -69,7 +75,9 @@ int main(int argc, char *argv[])
             case 0:
                 continue;
             case 1:
-                //join(IP, TCP, regIP, regUDP, arguments[1], arguments[2]);
+                strcpy(ring, arguments[1]);
+                strcpy(personal.id, arguments[2]);
+                join(personal, server, arguments);
                 continue;
             case 2:
                 //directJoin();

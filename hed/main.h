@@ -27,7 +27,6 @@
 #define WORD_LEN_MAX 70
 
 typedef struct _nodeInfo NodeInfo;
-
 typedef struct _nodeInfo
 {
     char id[2];
@@ -35,10 +34,12 @@ typedef struct _nodeInfo
     int TCP;
 } NodeInfo;
 
-typedef struct _ring RingInfo;
-typedef struct _ring
+typedef struct _serverInfo ServerInfo;
+typedef struct _serverInfo
 {
-    
-} RingInfo;
+    char regIP[MAX_IP_LENGTH];
+    int regUDP;
+} ServerInfo;
+
 
 #endif

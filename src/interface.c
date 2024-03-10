@@ -8,16 +8,6 @@ int inputCheck(char* input, int *inputCount, char** inputArray)
 
     token = strtok(input, " ");
 
-    if (token == NULL)
-    {
-        fprintf(stderr, "ERROR: wrong number of arguments!\n");
-        return 0;
-    }
-
-    inputArray = (char **)malloc(MAX_ARGUMENTS * sizeof(char *));
-    memoryCheck(inputArray);
-
-
     while (*inputCount < MAX_ARGUMENTS)
     {
         if (token == NULL)
@@ -47,9 +37,6 @@ int inputCheck(char* input, int *inputCount, char** inputArray)
         }
 
         // verificação do formato dos argumentos para o join
-        printf("inputArray[1]: %s\t %ld\n", inputArray[1], strlen(inputArray[1]));
-        printf("inputArray[2]: %s\t %ld\n", inputArray[2], strlen(inputArray[2]));
-
         if (strlen(inputArray[1]) == 3 && strlen(inputArray[2]) == 2)
         {
             if ((isdigit(inputArray[1][0]) && isdigit(inputArray[1][1]) && isdigit(inputArray[1][2])))
@@ -64,6 +51,37 @@ int inputCheck(char* input, int *inputCount, char** inputArray)
         fprintf(stderr, "\tid formate: 00\n");
         return (0);
     }
+
+    if (((strcmp(inputArray[0], "direct") == 0) && strcmp(inputArray[1], "join") == 0) || strcmp(inputArray[0], "dj") == 0)
+    {
+        if (*inputCount != 5 && *inputCount != 6)
+        {
+            fprintf(stderr, "ERROR: wrong number of arguments for direct join command!\n");
+            return (0);
+        }
+        if (strlen(inputArray[2]) == 2 && strlen(inputArray[3]) == 2 && strlen(inputArray[4]) == MAX_IP_LENGTH && strlen(inputArray[5]) == 5)
+        {
+            if (isdigit(inputArray[2][0]) && isdigit(inputArray[2][1]))
+            {
+                if (isdigit(inputArray[3][0]) && isdigit(inputArray[3][1]))
+                {
+                    if (ValidIPAddress(inputArray[4]) == false)
+                    {
+                        if (atoi(inputArray[5]) > 0 && atoi(inputArray[5]) < 65536)
+                            return (2);
+                    }
+                }
+            }
+        }
+        fprintf(stderr, "ERROR: wrong format of the direct join arguments!\n");
+        fprintf(stderr, "\tid formate: 00\n");
+        fprintf(stderr, "\tSucc id formate: 00\n");
+        fprintf(stderr, "\tSucc IP formate: 000.000.000.000\n");
+        fprintf(stderr, "\tSucc Port formate: 00000\n");
+
+        return 0;
+
+    }
     
     if (strcmp(inputArray[0], "exit") == 0 || strcmp(inputArray[0], "x") == 0)
     {
@@ -77,92 +95,70 @@ int inputCheck(char* input, int *inputCount, char** inputArray)
 }
 
 //Implementação dos comandos da interface com o utlizador (4.2)
-bool join(char *IP, int TCP, char *regIP, int regUDP, char *ring, char *id)
+bool join(NodeInfo personal, ServerInfo server, char** arguments)
 {
+    int fd, errcode;
+    char buffer[200];
+
+    //inicializar buffer
+    for(int i = 0; i < 200; i++)
+    {
+        buffer[i] = '0';
+    }
+
     struct sockaddr addr;
     socklen_t addrlen;
     ssize_t n;
-    char buffer[128];
-
     struct addrinfo hints, *res;
-    int fd, errcode, nchars;
-    
-    //socket creation and verification
+
+    // socket creation and verification
     fd = socket(AF_INET, SOCK_DGRAM, 0); // UDP socket
-    if (fd == -1) /*error*/
+    if (fd == -1)                        /*error*/
         exit(1);
 
-    memset(&hints, 0, sizeof(hints));
+    memset(&hints, 0, sizeof hints);
     hints.ai_family = AF_INET;      // IPv4
     hints.ai_socktype = SOCK_DGRAM; // UDP socket
-    
+
     errcode = getaddrinfo("tejo.tecnico.ulisboa.pt", "59000", &hints, &res);
-    // errcode = getaddrinfo(regIP, regUDP, &hints, &res);
     if (errcode != 0)
     { /*error*/
         printf("Error connecting");
         exit(1);
     }
 
-    //inicializar buffer
-    for (int i = 0; i< strlen(buffer); i++)
-    {
-        buffer[i] = '\0';
-    }
-
-    
-    sprintf(buffer, "NODES %s", ring);
-    nchars = strlen(buffer);
-    n = sendto(fd, buffer, nchars, 0, res->ai_addr, res->ai_addrlen);
-
-    //inicializar buffer
-    for (int i = 0; i< strlen(buffer); i++)
-    {
-        buffer[i] = '\0';
-    }
-
-    addrlen = sizeof(addr);
-    n = recvfrom(fd, buffer, 500, 0, &addr, &addrlen);
-    if (n == -1) /*error*/
-        exit(1);
-    
-    buffer[n] = '\0';
-    printf("echo: %s\n", buffer);
-
-    for (int i = 0; i< strlen(buffer); i++)
-    {
-        buffer[i] = '\0';
-    }
-
-    // = sendto(fd, "UNREG 112 12 ", 32, 0, res->ai_addr, res->ai_addrlen);  // UNREG 112 05   ///NODES 112
-    sprintf(buffer, "REG %s %s %s %d", ring, id, IP, TCP);
-    nchars = strlen(buffer);
-    n = sendto(fd, buffer, nchars, 0, res->ai_addr, res->ai_addrlen);
+    sprintf(buffer, "NODES %s", arguments[1]);
+    n = sendto(fd, buffer, strlen(buffer), 0, res->ai_addr, res->ai_addrlen);
     if (n == -1)
     { /*error*/
         printf("Error messaging.");
         exit(1);
     }
 
+    for(int i = 0; i < 200; i++)
+    {
+        buffer[i] = '0';
+    }
+
     freeaddrinfo(res);
 
-    for (int i = 0; i< strlen(buffer); i++)
-    {
-        buffer[i] = '\0';
-    }
-        
     addrlen = sizeof(addr);
-    n = recvfrom(fd, buffer, 500, 0, &addr, &addrlen);
-
+    n = recvfrom(fd, buffer, 200, 0, &addr, &addrlen);
     if (n == -1) /*error*/
         exit(1);
 
     buffer[n] = '\0';
 
-    printf("echo: %s\n", buffer);
+    printf("echo: %s", buffer);
+
+
     close(fd);
-    
     return true;
+}
+
+char* IDCheck(char* id, )
+{
+    
 }
 
 bool leave()
