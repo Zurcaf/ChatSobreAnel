@@ -30,9 +30,9 @@ typedef struct _nodeInfo
 {
     char *id;
     char *IP;
-    int *TCP;
+    int TCP;
     char *regIP;
-    int *regUDP;
+    int regUDP;
 } NodeInfo;
 
 

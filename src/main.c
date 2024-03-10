@@ -7,12 +7,10 @@
 int main(int argc, char *argv[])
 {
     char IP[MAX_IP_LENGTH] = "";
-    int TCP[MAX_PORT_LENGTH] = 0;
+    int TCP = 0;
 
     char regIP[MAX_IP_LENGTH] = "193.136.138.142";
-    int regUDP[MAX_PORT_LENGTH] = 59000;
-
-    int i = 0;
+    int regUDP = 59000;
 
     int argumentCount = 0;
     char **arguments = NULL;
@@ -29,7 +27,7 @@ int main(int argc, char *argv[])
     strcpy(personal->IP, IP);
     personal->TCP = TCP;
 
-    ĩf (argc == 5)
+    if (argc == 5)
     {
     strcpy(personal->regIP, regIP);
     personal->regUDP = regUDP;
@@ -40,7 +38,7 @@ int main(int argc, char *argv[])
     printf("IP: %s\n", IP);
     printf("TCP: %d\n", TCP);
     printf("regIP: %s\n", regIP);
-    printf("regUDP: %s\n", regUDP);
+    printf("regUDP: %d\n", regUDP);
     printf("------------------------------------------------------------\n");
     printf("Available comands:\njoin (j) ring id\ndirect join (dj) id succid succIP succTCP\nchord (c)\nremove chord (rc)\nshow topology (st)\nshow routing (sr) dest\nshow path (sp) dest\nshow forwarding (sf)\nmessage (m) dest message\nleave (l)\nexit (x)\n");
     printf("------------------------------------------------------------\n");

@@ -1,9 +1,9 @@
 #include "../hed/main.h"
+#include "../hed/auxFunc.h"
 
-void inputCheck(char* input, int *inputCount, char** inputArray)
+int inputCheck(char* input, int *inputCount, char** inputArray)
 {
     int i = 0;
-    bool flag_arg = true;
     *inputCount = 0;
     char *token;
 
@@ -20,19 +20,19 @@ void inputCheck(char* input, int *inputCount, char** inputArray)
     memoryCheck(inputArray);
 
 
-    while (inputCount < MAX_ARGUMENTS)
+    while (*inputCount < MAX_ARGUMENTS)
     {
         if (token == NULL)
             break;
         
-        inputArray[inputCount] = (char *)malloc(strlen(token) + 1);
-        memoryCheck(inputArray[inputCount]);
+        inputArray[*inputCount] = (char *)malloc(strlen(token) + 1);
+        memoryCheck(inputArray[*inputCount]);
 
-        strcpy(inputArray[inputCount], token);
-        strcat(inputArray[inputCount], "\0");
+        strcpy(inputArray[*inputCount], token);
+        strcat(inputArray[*inputCount], "\0");
 
         token = strtok(NULL, " ");
-        inputCount++;
+        *inputCount++;
     }
 
     inputArray[i - 1][strlen(inputArray[i - 1]) - 1] = '\0'; // Remover o \n do último argumento
@@ -41,7 +41,7 @@ void inputCheck(char* input, int *inputCount, char** inputArray)
     if (strcmp(inputArray[0], "join") == 0 || strcmp(inputArray[0], "j") == 0)
     {
         // verificação do numero de argumentos para o join
-        if (argCount != 3)
+        if (*inputCount != 3)
         {
             fprintf(stderr, "ERROR: wrong number of arguments for join command!\n");
             return (0);
@@ -77,7 +77,7 @@ void inputCheck(char* input, int *inputCount, char** inputArray)
 }
 
 //Implementação dos comandos da interface com o utlizador (4.2)
-bool join(char *IP, int TCP, char *regIP, char *regUDP, char *ring, char *id)
+bool join(char *IP, int TCP, char *regIP, int regUDP, char *ring, char *id)
 {
     struct sockaddr addr;
     socklen_t addrlen;
