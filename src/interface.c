@@ -94,6 +94,63 @@ int inputCheck(char* input, int *inputCount, char** inputArray)
     return 0;
 }
 
+void newID(char* buffer, NodeInfo *personal)
+{
+    int lineCount = 0;
+    char **lines = (char **)malloc(128 * sizeof(char *));
+    char *token;
+
+    token = strtok(buffer, "\n");
+
+    while (lineCount < 17)
+    {
+        if (token == NULL)
+            break;
+
+        lines[lineCount] = (char *)malloc(strlen(token) + 1);
+        memoryCheck(lines[lineCount]);
+        
+
+        strcpy(lines[lineCount], token);
+        strcat(lines[lineCount], "\0");
+
+        token = strtok(NULL, "\n");
+        lineCount += 1;
+    }
+    
+
+    int id = 0;
+    char* ip = (char *)malloc(15 * sizeof(char));
+    int port = 0;
+    bool flagID[99];
+
+    //inicializar flagID
+    for (int i = 0; i < 99; i++)
+    {
+        flagID[i] = false;
+    }
+
+    for (int i = 1; i < lineCount; i++)
+    {
+        sscanf(lines[i], "%d %s %d", &id, ip, &port);
+        flagID[id] = true;
+    }
+
+    if (flagID[personal->id] == true)
+    {        
+        personal->id = 1;
+
+        while (1)
+        {
+            if (flagID[personal->id]==false)
+                break;
+            personal->id+=1;
+        }
+        printf("ID already in use. New ID: %02d\n", personal->id);
+    }
+    return;
+}
+
 //Implementação dos comandos da interface com o utlizador (4.2)
 bool join(NodeInfo personal, ServerInfo server, int ring)
 {
@@ -136,9 +193,30 @@ bool join(NodeInfo personal, ServerInfo server, int ring)
     }
 
     for(int i = 0; i < 200; i++)
-    {
         buffer[i] = '0';
+
+    addrlen = sizeof(addr);
+    n = recvfrom(fd, buffer, 200, 0, &addr, &addrlen);
+    if (n == -1) /*error*/
+        exit(1);
+
+    buffer[n] = '\0';
+
+    newID(buffer, &personal);
+
+    for(int i = 0; i < 200; i++)
+        buffer[i] = '0';
+
+    sprintf(buffer, "REG %03d %02d %s %05d", ring, personal.id, personal.IP, personal.TCP);
+    n = sendto(fd, buffer, strlen(buffer), 0, res->ai_addr, res->ai_addrlen);
+    if (n == -1)
+    { /*error*/
+        printf("Error messaging.");
+        exit(1);
     }
+
+    for(int i = 0; i < 200; i++)
+        buffer[i] = '0';
 
     freeaddrinfo(res);
 
@@ -149,71 +227,11 @@ bool join(NodeInfo personal, ServerInfo server, int ring)
 
     buffer[n] = '\0';
 
-    newID(buffer, personal);
-
-    int lineCount = 0;
-    char **lines = (char **)malloc(128 * sizeof(char *));
-    char *token;
-
-    token = strtok(buffer, "\n");
-
-    while (lineCount < 17)
-    {
-        if (token == NULL)
-            break;
-
-        lines[lineCount] = (char *)malloc(strlen(token) + 1);
-        memoryCheck(lines[lineCount]);
-        
-
-        strcpy(lines[lineCount], token);
-        strcat(lines[lineCount], "\0");
-
-        token = strtok(NULL, "\n");
-        lineCount += 1;
-    }
-    
-
-    int id = 0;
-    char* ip = (char *)malloc(15 * sizeof(char));
-    int port = 0;
-    bool flagID[99];
-
-    //inicializar flagID
-    for (int i = 0; i < 99; i++)
-    {
-        flagID[i] = false;
-    }
-
-    for (int i = 1; i < lineCount; i++)
-    {
-        sscanf(lines[i], "%d %s %d", &id, ip, &port);
-        flagID[id] = true;
-    }
-
-    if (flagID[personal.id] == true)
-    {        
-        personal.id = 1;
-
-        while (1)
-        {
-            if (flagID[personal.id]==false)
-                break;
-            personal.id++;
-        }
-        printf("New ID: %02d\n", personal.id);
-    }
-
-    
+    printf("%s\n", buffer);
 
     close(fd);
     return true;
 }
-
-// char* IDCheck(char* id, )
-// {
-    
-// }
 
 bool leave()
 {
