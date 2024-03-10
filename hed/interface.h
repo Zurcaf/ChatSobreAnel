@@ -6,7 +6,7 @@ int inputCheck(char* input, int *inputCount, char** inputArray);
 
 bool directJoin();
 
-bool join(NodeInfo personal, ServerInfo server, char** arguments);
+bool join(NodeInfo personal, ServerInfo server, int ring);
 
 bool leave();
 

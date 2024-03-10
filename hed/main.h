@@ -29,7 +29,7 @@
 typedef struct _nodeInfo NodeInfo;
 typedef struct _nodeInfo
 {
-    char id[2];
+    int id;
     char IP[MAX_IP_LENGTH];
     int TCP;
 } NodeInfo;

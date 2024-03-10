@@ -36,10 +36,10 @@ int main(void)
 
     printf("Connected\n");
 
-    // n = sendto(fd, "UNREG 112", 32, 0, res->ai_addr, res->ai_addrlen);  // UNREG 112 05   ///NODES 112
-    n = sendto(fd, "REG 067 01 142.0.0.1 2000", 32, 0, res->ai_addr, res->ai_addrlen);
+    n = sendto(fd, "UNREG 067 03", 32, 0, res->ai_addr, res->ai_addrlen);  // UNREG 112 05   ///NODES 112
+    // n = sendto(fd, "REG 067 01 142.0.0.1 1000", 32, 0, res->ai_addr, res->ai_addrlen);
     // n = sendto(fd, "REG 067 02 140.0.0.1 2000", 32, 0, res->ai_addr, res->ai_addrlen);
-    // n = sendto(fd, "REG 067 03 140.0.0.1 2000", 32, 0, res->ai_addr, res->ai_addrlen);
+    // n = sendto(fd, "REG 067 06 140.0.0.1 2000", 32, 0, res->ai_addr, res->ai_addrlen);
     // n = sendto(fd, "REG 067 04 140.0.0.1 2000", 32, 0, res->ai_addr, res->ai_addrlen);
     // n = sendto(fd, "REG 067 05 140.0.0.1 2000", 32, 0, res->ai_addr, res->ai_addrlen);
     // n = sendto(fd, "REG 067 06 140.0.0.1 2000", 32, 0, res->ai_addr, res->ai_addrlen);
@@ -59,6 +59,8 @@ int main(void)
         exit(1);
 
     buffer[n] = '\0';
+
+
 
     printf("echo: %s\n", buffer);
     close(fd);

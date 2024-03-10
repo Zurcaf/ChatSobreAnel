@@ -12,8 +12,7 @@ int main(int argc, char *argv[])
     int aux;
     char input[MAX_PUT];
 
-
-    char ring[3]="000";
+    int ring = 0;
     ServerInfo server;
     NodeInfo personal;
     NodeInfo Succ;
@@ -25,22 +24,22 @@ int main(int argc, char *argv[])
     server.regUDP = 59000;
 
     //inicializar personal
-    strcpy(personal.id, INIT_ID);
+    personal.id = 0;
     strcpy(personal.IP, INIT_IP);
     personal.TCP = 0;
 
     //inicializar Succ
-    strcpy(Succ.id, INIT_ID);
+    Succ.id = 0;
     strcpy(Succ.IP, INIT_IP);
     Succ.TCP = 0;
 
     //inicializar Succ2
-    strcpy(Succ2.id, INIT_ID);
+    Succ2.id = 0;
     strcpy(Succ2.IP, INIT_IP);
     Succ2.TCP = 0;
 
     //inicializar Pred  
-    strcpy(Pred.id, INIT_ID);
+    Pred.id = 0;
     strcpy(Pred.IP, INIT_IP);
     Pred.TCP = 0;
 
@@ -75,9 +74,9 @@ int main(int argc, char *argv[])
             case 0:
                 continue;
             case 1:
-                strcpy(ring, arguments[1]);
-                strcpy(personal.id, arguments[2]);
-                join(personal, server, arguments);
+                ring = atoi(arguments[1]);
+                personal.id = atoi(arguments[2]);
+                join(personal, server, ring);
                 continue;
             case 2:
                 //directJoin();
