@@ -47,7 +47,10 @@ int inputCheck(char* input, int *inputCount, char** inputArray)
         }
 
         // verificação do formato dos argumentos para o join
-        if (strlen(inputArray[1]) != 3 || strlen(inputArray[2]) != 2)
+        printf("inputArray[1]: %s\t %ld\n", inputArray[1], strlen(inputArray[1]));
+        printf("inputArray[2]: %s\t %ld\n", inputArray[2], strlen(inputArray[2]));
+
+        if (strlen(inputArray[1]) == 3 && strlen(inputArray[2]) == 2)
         {
             if ((isdigit(inputArray[1][0]) && isdigit(inputArray[1][1]) && isdigit(inputArray[1][2])))
             {

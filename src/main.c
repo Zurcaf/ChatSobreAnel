@@ -6,56 +6,56 @@
 
 int main(int argc, char *argv[])
 {
-    char IP[MAX_IP_LENGTH] = "";
-    int TCP = 0;
-
     char regIP[MAX_IP_LENGTH] = "193.136.138.142";
     int regUDP = 59000;
 
     int argumentCount = 0;
     char **arguments = NULL;
     
+    int aux;
     char input[MAX_PUT];
 
-    NodeInfo *personal = (NodeInfo *)malloc(sizeof(NodeInfo));
-    memoryCheck(personal);
 
-    //inicializat personal
-    personal->id = NULL;
-    personal->IP = NULL;
-    personal->TCP = 0;
-    personal->regIP = NULL;
-    personal->regUDP = 0;
+    char ring[3]="000";
+    NodeInfo personal;
+    NodeInfo Succ;
+    NodeInfo Succ2;
+    NodeInfo Pred;
 
+    //inicializar personal
+    strcpy(personal.id, INIT_ID);
+    strcpy(personal.IP, INIT_IP);
+    personal.TCP = 0;
+
+    //inicializar Succ
+    strcpy(Succ.id, INIT_ID);
+    strcpy(Succ.IP, INIT_IP);
+    Succ.TCP = 0;
+
+    //inicializar Succ2
+    strcpy(Succ2.id, INIT_ID);
+    strcpy(Succ2.IP, INIT_IP);
+    Succ2.TCP = 0;
+
+    //inicializar Pred  
+    strcpy(Pred.id, INIT_ID);
+    strcpy(Pred.IP, INIT_IP);
+    Pred.TCP = 0;
+
+    
     // Verifing the arguments passed to the application
-    argsCheck(argc, argv, IP, &TCP, regIP, &regUDP);
-
-    personal->IP = (char *)malloc(strlen(IP) + 1);
-    memoryCheck(personal->IP);
-
-    strcpy(personal->IP, IP);
-    personal->TCP = TCP;
-
-    if (argc == 5)
-    {
-    personal->regIP = (char *)malloc(strlen(regIP) + 1);
-    memoryCheck(personal->regIP);
-
-    strcpy(personal->regIP, regIP);
-    personal->regUDP = regUDP;
-    }
+    argsCheck(argc, argv, personal.IP, &personal.TCP, regIP, &regUDP);
 
     printf("------------------------------------------------------------\n");
     printf("Application COR invoked with the following parameters:\n");
-    printf("IP: %s\n", IP);
-    printf("TCP: %d\n", TCP);
+    printf("IP: %s\n", personal.IP);
+    printf("TCP: %d\n", personal.TCP);
     printf("regIP: %s\n", regIP);
     printf("regUDP: %d\n", regUDP);
     printf("------------------------------------------------------------\n");
     printf("Available comands:\njoin (j) ring id\ndirect join (dj) id succid succIP succTCP\nchord (c)\nremove chord (rc)\nshow topology (st)\nshow routing (sr) dest\nshow path (sp) dest\nshow forwarding (sf)\nmessage (m) dest message\nleave (l)\nexit (x)\n");
     printf("------------------------------------------------------------\n");
 
-    int aux;
 
     while (1)
     {
@@ -109,10 +109,6 @@ int main(int argc, char *argv[])
         }
         free(arguments);
     }
-    
-    free(personal->IP);
-    free(personal->regIP);
-    free(personal);
 
     return 0;
 }

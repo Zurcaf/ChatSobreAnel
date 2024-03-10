@@ -20,6 +20,8 @@
 #define MAX_IP_LENGTH 16 // IPv4 has at most 15 characters +1 for the null terminator
 #define MAX_PORT_LENGTH 5 // 65535 has 5 characters +1 for the null terminator
 #define MAX_ARGUMENTS 7
+#define INIT_ID "00"
+#define INIT_IP "0000000000000000"
 
 #define MAX_PUT 100
 #define WORD_LEN_MAX 70
@@ -28,12 +30,15 @@ typedef struct _nodeInfo NodeInfo;
 
 typedef struct _nodeInfo
 {
-    char *id;
-    char *IP;
+    char id[2];
+    char IP[MAX_IP_LENGTH];
     int TCP;
-    char *regIP;
-    int regUDP;
 } NodeInfo;
 
+typedef struct _ring RingInfo;
+typedef struct _ring
+{
+    
+} RingInfo;
 
 #endif
