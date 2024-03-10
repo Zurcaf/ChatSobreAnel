@@ -1,4 +1,5 @@
 #include "../hed/main.h"
+#include "../hed/interface.h"
 
 void memoryCheck(void *ptr)
 {
@@ -17,66 +18,6 @@ void fileCheck(FILE *filePointer, char *fileName)
         exit(3);
     }
 }
-
-void argsCheck(int argc, char *argv[], char *IP, int *TCP, char *regIP, char *regUDP)
-{
-    //Verificação do número de argumentos (2 ou 4) porque 
-    //  regIP e regUDP são os parametros do servidor de registo e
-    //  por omissão, estes parâmetros tomam os valores 193.136.138.142 e 59000, não sendo necessária a sua introdução.
-
-    if (argc != 3 && argc != 5)
-    {
-        fprintf(stderr, "ERROR: wrong number of arguments!\n");
-        exit(1);
-    }
-    
-    //Verificação do IP
-    if (ValidIPAddress(argv[1]))
-    {
-        fprintf(stderr, "ERROR: the entered IP address is not in a valid format!\n");
-        exit(2);
-    }
-
-    strcpy(IP, argv[1]);
-    
-    //Verificação do TCP
-    *TCP = atoi(argv[2]);
-    if (*TCP < 1024 || *TCP > 65535)
-    {
-        fprintf(stderr, "ERROR: the entered TCP port is not in a valid format!\n");
-        exit(2);
-    }
-    
-    if (argc == 5)
-    {
-        //Verificação do regIP
-        
-
-        //Verificação do regUDP
-        
-    }
-}
-
-// while (1)
-// {
-//     sscanf(input, "%s %s %d %s %d", COR, IP, &TCP, regIP, &regUDP);
-//     // Check if the entered IP address is valid
-//     if (isValidIPAddress(IP))
-//     {
-//         printf("The entered IP address is not in a valid format.\n");
-//         continue;
-//     }
-//     // Check if the entered regIP is in a valid format
-//     if (strcmp("193.136.138.142", regIP) != 0)
-//     {
-//         if (!isValidIPAddress(regIP))
-//         {
-//             printf("The entered regIP is not in a valid format.\n");
-//             continue;
-//         }
-//     }
-//     break;
-// }
 
 bool ValidIPAddress(const char *ipAddress)
 {
@@ -141,3 +82,52 @@ bool ValidIPAddress(const char *ipAddress)
 
     return false;
 }
+
+void argsCheck(int argc, char *argv[], char *IP, int *TCP, char *regIP, int *regUDP)
+{
+    //Verificação do número de argumentos (2 ou 4) porque 
+    //  regIP e regUDP são os parametros do servidor de registo e
+    //  por omissão, estes parâmetros tomam os valores 193.136.138.142 e 59000, não sendo necessária a sua introdução.
+
+    if (argc != 3 && argc != 5)
+    {
+        fprintf(stderr, "ERROR: wrong number of arguments!\n");
+        exit(1);
+    }
+    
+    //Verificação do IP
+    if (ValidIPAddress(argv[1]))
+    {
+        fprintf(stderr, "ERROR: the entered IP address is not in a valid format!\n");
+        exit(2);
+    }
+
+    strcpy(IP, argv[1]);
+    
+    //Verificação do TCP
+    *TCP = atoi(argv[2]);
+    if (*TCP < 1024 || *TCP > 65535)
+    {
+        fprintf(stderr, "ERROR: the entered TCP port is not in a valid format!\n");
+        exit(2);
+    }
+    
+    if (argc == 5)
+    {
+        //Verificação do regIP
+        if (ValidIPAddress(argv[3]))
+        {
+            fprintf(stderr, "ERROR: the entered regIP address is not in a valid format!\n");
+            exit(2);
+        }
+
+        //Verificação do regUDP
+        *regUDP = atoi(argv[4]);
+        if (*regUDP < 1024 || *regUDP > 65535)
+        {
+            fprintf(stderr, "ERROR: the entered regUDP port is not in a valid format!\n");
+            exit(2);
+        }        
+    }
+}
+
