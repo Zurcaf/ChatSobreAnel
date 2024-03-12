@@ -72,39 +72,43 @@ int main(int argc, char *argv[])
         switch (aux)
         {
             case 0:
-                continue;
+                break;
             case 1:
                 ring = atoi(arguments[1]);
                 personal.id = atoi(arguments[2]);
                 join(personal, server, ring);
-                continue;
+                break;
             case 2:
-                //directJoin();
-                continue;
+                personal.id = atoi(arguments[1]);
+                Succ.id = atoi(arguments[2]);
+                strcpy(Succ.IP, arguments[3]);
+                Succ.TCP = atoi(arguments[4]);
+                directJoin(personal, Succ);
+                break;
             case 3:
                 //chord();
-                continue;
+                break;
             case 4:
                 //removeChord();
-                continue;
+                break;
             case 5:
                 //showTopology();
-                continue;
+                break;
             case 6:
                 //showRouting();
-                continue;
+                break;
             case 7:
                 //showPath();
-                continue;
+                break;
             case 8:
                 //showForwarding();
-                continue;
+                break;
             case 9:
                 //message();
-                continue;
+                break;
             case 10:
-                leave();
-                continue;
+                leave(ring, personal, server);
+                break;
             case 11:
                 exit(0);
                 break;

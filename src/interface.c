@@ -22,7 +22,6 @@ int inputCheck(char* input, int *inputCount, char** inputArray)
         token = strtok(NULL, " ");
         *inputCount+= 1;
     }
-
     
     inputArray[*inputCount - 1][strlen(inputArray[*inputCount - 1]) - 1] = '\0'; // Remover o \n do último argumento
     inputArray[*inputCount] = NULL;                                  // Marcar o final da lista de argumentos
@@ -83,6 +82,86 @@ int inputCheck(char* input, int *inputCount, char** inputArray)
 
     }
     
+    if (strcmp(inputArray[0], "chord") == 0 || strcmp(inputArray[0], "c") == 0)
+    {
+        if (*inputCount != 1)
+        {
+            fprintf(stderr, "ERROR: wrong number of arguments for chord command!\n");
+            return (0);
+        }
+        return (3);
+    }
+
+    if (((strcmp(inputArray[0], "remove") == 0) && strcmp(inputArray[1], "chord") == 0) || strcmp(inputArray[0], "rc") == 0)
+    {
+        if (*inputCount != 1)
+        {
+            fprintf(stderr, "ERROR: wrong number of arguments for remove command!\n");
+            return (0);
+        }
+        return (4);
+    }
+
+    if (((strcmp(inputArray[0], "show") == 0) && strcmp(inputArray[1], "topology") == 0) || strcmp(inputArray[0], "st") == 0)
+    {
+        if (*inputCount != 1)
+        {
+            fprintf(stderr, "ERROR: wrong number of arguments for remove command!\n");
+            return (0);
+        }
+        return (5);
+    }
+
+    if (((strcmp(inputArray[0], "show") == 0) && strcmp(inputArray[1], "routing") == 0) || strcmp(inputArray[0], "sr") == 0)
+    {
+        if (*inputCount != 2)
+        {
+            fprintf(stderr, "ERROR: wrong number of arguments for remove command!\n");
+            return (0);
+        }
+        return (6);
+    }
+
+    if(((strcmp(inputArray[0], "show") == 0) && strcmp(inputArray[1], "path") == 0) || strcmp(inputArray[0], "sp") == 0)
+    {
+        if (*inputCount != 2)
+        {
+            fprintf(stderr, "ERROR: wrong number of arguments for remove command!\n");
+            return (0);
+        }
+        return (7);
+    }
+
+    if (((strcmp(inputArray[0], "show") == 0) && strcmp(inputArray[1], "forwarding") == 0) || strcmp(inputArray[0], "sf") == 0)
+    {
+        if (*inputCount != 1)
+        {
+            fprintf(stderr, "ERROR: wrong number of arguments for remove command!\n");
+            return (0);
+        }
+        return (8);
+    }
+
+    if(strcmp(inputArray[0], "message") == 0 || strcmp(inputArray[0], "m") == 0)
+    {
+        if (*inputCount != 3)
+        {
+            fprintf(stderr, "ERROR: wrong number of arguments for message command!\n");
+            return (0);
+        }
+        return (9);
+    }
+
+    if(strcmp(inputArray[0], "leave") == 0 || strcmp(inputArray[0], "l") == 0)
+    {
+        if (*inputCount != 1)
+        {
+            fprintf(stderr, "ERROR: wrong number of arguments for leave command!\n");
+            return (0);
+        }
+        return (10);
+    }
+
     if (strcmp(inputArray[0], "exit") == 0 || strcmp(inputArray[0], "x") == 0)
     {
         printf("Exiting the application...\n");
@@ -233,7 +312,70 @@ bool join(NodeInfo personal, ServerInfo server, int ring)
     return true;
 }
 
-bool leave()
+bool directJoin(NodeInfo personal, NodeInfo Succ)
 {
+    
+
     return true;
+}
+
+void leave(int ring, NodeInfo personal, ServerInfo server)
+{
+    int fd, errcode;
+    char buffer[200];
+
+    //inicializar buffer
+    for(int i = 0; i < 200; i++)
+    {
+        buffer[i] = '0';
+    }
+
+    struct sockaddr addr;
+    socklen_t addrlen;
+    ssize_t n;
+    struct addrinfo hints, *res;
+
+    // socket creation and verification
+    fd = socket(AF_INET, SOCK_DGRAM, 0); // UDP socket
+    if (fd == -1)                        /*error*/
+        exit(1);
+
+    memset(&hints, 0, sizeof hints);
+    hints.ai_family = AF_INET;      // IPv4
+    hints.ai_socktype = SOCK_DGRAM; // UDP socket
+
+    printf("Server IP: %s\n", server.regIP);
+    printf("Server Port: %d\n", server.regUDP);
+
+    errcode = getaddrinfo("tejo.tecnico.ulisboa.pt", "59000", &hints, &res);
+    if (errcode != 0)
+    { /*error*/
+        printf("Error connecting");
+        exit(1);
+    }
+
+    sprintf(buffer, "UNREG %03d %02d", ring, personal.id);
+    n = sendto(fd, buffer, strlen(buffer), 0, res->ai_addr, res->ai_addrlen);
+    if (n == -1)
+    { /*error*/
+        printf("Error messaging.");
+        exit(1);
+    }
+
+    for(int i = 0; i < 200; i++)
+        buffer[i] = '0';
+
+    freeaddrinfo(res);
+
+    addrlen = sizeof(addr);
+    n = recvfrom(fd, buffer, 200, 0, &addr, &addrlen);
+    if (n == -1) /*error*/
+        exit(1);
+
+    buffer[n] = '\0';
+
+    printf("%s\n", buffer);
+
+    close(fd);
+    return;
 }

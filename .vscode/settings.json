@@ -58,7 +58,8 @@
   "C_Cpp_Runner.msvcSecureNoWarnings": false,
   "files.associations": {
     "socket.h": "c",
-    "stdio.h": "c"
+    "stdio.h": "c",
+    "auxfunc.h": "c"
   },
   "C_Cpp.errorSquiggles": "disabled"
 }
