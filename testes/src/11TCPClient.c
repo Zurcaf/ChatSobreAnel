@@ -21,7 +21,7 @@ int main(void)
     hints.ai_family = AF_INET;       // IPv4
     hints.ai_socktype = SOCK_STREAM; // TCP socket
 
-    n = getaddrinfo("127.0.0.1", "58002", &hints, &res);
+    n = getaddrinfo("127.0.0.1", "58018", &hints, &res);
     if (n != 0) /*error*/
         exit(1);
 
@@ -29,16 +29,32 @@ int main(void)
     if (n == -1) /*error*/
         exit(1);
 
-    ptr = strcpy(buffer, "OLA!");
-    nbytes = 128;
-    nleft = nbytes;
-
-    while (nleft > 0)
+    while (1)
     {
-        nwritten = write(fd, ptr, nleft);
-        if (nwritten <= 0) /*error*/
-            exit(1);
-        nleft -= nwritten;
-        ptr += nwritten;
+        printf("Send message?\n");
+        fgets(buffer, 128, stdin);
+        
+        ptr = buffer;
+        nbytes = strlen(buffer);
+        nleft = nbytes;
+
+        if (strcmp(buffer, "x\n") == 0)
+            break;
+
+        while (nleft > 0)
+        {
+            nwritten = write(fd, ptr, nleft);
+            if (nwritten <= 0) /*error*/
+                exit(1);
+            nleft -= nwritten;
+            ptr += nwritten;
+        }
+        for (int i = 0; i < 128; i++)
+        {
+            buffer[i] = '0';
+        }
+        ptr = NULL;
     }
+
+    close(fd);
 }

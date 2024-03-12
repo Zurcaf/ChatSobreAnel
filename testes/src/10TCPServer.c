@@ -24,7 +24,7 @@ int main(void)
     hints.ai_socktype = SOCK_STREAM; // TCP socket
     hints.ai_flags = AI_PASSIVE;
     
-    if ((errcode = getaddrinfo("127.0.0.1", "58002", &hints, &res)) != 0) /*error*/
+    if ((errcode = getaddrinfo("127.0.0.1", "58015", &hints, &res)) != 0) /*error*/
         exit(1);
     
     if (bind(fd, res->ai_addr, res->ai_addrlen) == -1)
@@ -48,6 +48,7 @@ int main(void)
         {
             if (n == -1) /*error*/
                 break;   // exit(1);
+            
             ptr = &buffer[0];
             while (n > 0)
             {
@@ -55,8 +56,13 @@ int main(void)
                     exit(1);
                 n -= nw;
                 ptr += nw;
-                printf("%s \n", buffer);
+                printf("%s", buffer);
             }
+            for (int i = 0; i < 128; i++)
+            {
+                buffer[i] = '\0';
+            }
+            ptr = NULL;
         }
         close(newfd);
     }

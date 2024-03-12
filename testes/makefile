@@ -47,7 +47,10 @@ OBJS = $(patsubst $(SRC)/%.c, $(OBJ)/%.o, $(SRCS))
 13: $(SRC)/13toke.c
 	gcc $(CFLAGS) $(SRC)/13toke.c -o $(BINDIR)/13toke
 
-#Testes de cada codigo
+14: $(SRC)/14SelectedServer.c
+	gcc $(CFLAGS) $(SRC)/14SelectedServer.c -o $(BINDIR)/14SelectedServer
+
+
 0t: 0
 	./$(BINDIR)/0getHostName
 
@@ -80,6 +83,9 @@ OBJS = $(patsubst $(SRC)/%.c, $(OBJ)/%.o, $(SRCS))
 
 13t: 13
 	./$(BINDIR)/13toke
+
+14t: 14
+	./$(BINDIR)/14SelectedServer
 
 
 clean:
