@@ -17,13 +17,6 @@ int main(int argc, char *argv[])
     int newfd;
     // int errcode;
 
-    // ssize_t n, nw;
-    // struct sockaddr addr;
-    // socklen_t addrlen;
-
-    // Variáveis para o buffer
-    // char *ptr, buffer[128];
-
     // variaveis com informação do servidor e do nó   
     int ring = 0;
     ServerInfo server;
@@ -32,6 +25,7 @@ int main(int argc, char *argv[])
     NodeInfo succ2;
     NodeInfo pred;
 
+    // Inicialização das estruturas
     inicializer(&server, &personal, &succ, &succ2, &pred);
 
     // Alocação de memória para os argumentos
@@ -56,10 +50,12 @@ int main(int argc, char *argv[])
 
     while (1)
     {
+        // Inicialização dos descritores para o select
         SETs_Init(&readfds, &maxfd, personal.fd, succ.fd, succ2.fd, pred.fd);
 
         printf("Insert command: \n");
 
+        // Espera por atividade com o select
         if (select(maxfd + 1, &readfds, NULL, NULL, NULL) == -1)
             exit(1); /* error */
 
@@ -135,67 +131,4 @@ int main(int argc, char *argv[])
     return 0;
 }
 
-
-
-
-
-//     
-
-//     while (1)
-//     {
-//  
-//         printf("Waiting for activity on socket or stdin...\n");
-
-//         if (select(maxfd + 1, &readfds, NULL, NULL, NULL) == -1)
-//             exit(1); /* error */
-
-//         if (FD_ISSET(fd, &readfds)) 
-//         {
-//             // Novas conexões no socket
-//             addrlen = sizeof(addr);
-//             printf("Waiting to accept connections \n");
-//             if ((newfd = accept(fd, &addr, &addrlen)) == -1)
-//                 exit(1); /* error */
-
-//             printf("Connection accepted\n");
-//             while ((n = read(newfd, buffer, 128)) != 0)
-//             {
-//                 if (n == -1)
-//                     break;   // exit(1);
-
-//                 ptr = &buffer[0];
-//                 while (n > 0)
-//                 {
-//                     if ((nw = write(newfd, ptr, n)) <= 0)
-//                         exit(1);
-//                     n -= nw;
-//                     ptr += nw;
-//                     printf("%s", buffer);
-//                 }
-//                 for (int i = 0; i < 128; i++)
-//                 {
-//                     buffer[i] = '\0';
-//                 }
-//                 ptr = NULL;
-//             }
-//             close(newfd);
-//         }
-
-//         if (FD_ISSET(STDIN_FILENO, &readfds)) 
-//         {
-//             // Entrada padrão (stdin)
-//             printf("Data available on stdin...\n");
-//             // Faça algo com a entrada padrão
-//             fgets(buffer, sizeof(buffer), stdin);
-//             printf("You entered: %s", buffer);
-
-//             if (strcmp(buffer, "x\n") == 0)
-//                 break;
-//         }
-//     }
-
-//     close(fd);
-
-//     freeaddrinfo(res);
-//     close(fd);
 

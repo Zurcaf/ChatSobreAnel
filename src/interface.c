@@ -236,6 +236,8 @@ bool join(NodeInfo personal, ServerInfo server, int ring)
     int fd, errcode;
     char buffer[200];
 
+    char aux_str[8];
+
     //inicializar buffer
     for(int i = 0; i < 200; i++)
     {
@@ -256,7 +258,9 @@ bool join(NodeInfo personal, ServerInfo server, int ring)
     hints.ai_family = AF_INET;      // IPv4
     hints.ai_socktype = SOCK_DGRAM; // UDP socket
 
-    errcode = getaddrinfo("tejo.tecnico.ulisboa.pt", "59000", &hints, &res);
+    sprintf(aux_str, "%d", server.regUDP);
+
+    errcode = getaddrinfo(server.regIP, aux_str, &hints, &res);
     if (errcode != 0)
     { /*error*/
         printf("Error connecting");
@@ -322,6 +326,7 @@ bool directJoin(NodeInfo personal, NodeInfo Succ)
 void leave(int ring, NodeInfo personal, ServerInfo server)
 {
     int fd, errcode;
+    char aux_str[8];
     char buffer[200];
 
     //inicializar buffer
@@ -344,10 +349,9 @@ void leave(int ring, NodeInfo personal, ServerInfo server)
     hints.ai_family = AF_INET;      // IPv4
     hints.ai_socktype = SOCK_DGRAM; // UDP socket
 
-    printf("Server IP: %s\n", server.regIP);
-    printf("Server Port: %d\n", server.regUDP);
+    sprintf(aux_str, "%d", server.regUDP);
 
-    errcode = getaddrinfo("tejo.tecnico.ulisboa.pt", "59000", &hints, &res);
+    errcode = getaddrinfo(server.regIP , aux_str, &hints, &res);
     if (errcode != 0)
     { /*error*/
         printf("Error connecting");
