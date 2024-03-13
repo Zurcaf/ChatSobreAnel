@@ -120,10 +120,32 @@ int main(int argc, char *argv[])
         if (FD_ISSET(personal.fd, &readfds))
         {
             // Novas conexões no socket
+            // if ((newfd = accept(fd, &addr, &addrlen)) == -1) // preciso dos IP's das conexões?!? talvez não mas na ducida fica aqui
             if ((newfd = accept(personal.fd, NULL, NULL)) == -1)
                 exit(1); /* error */
 
             printf("Connection accepted\n");
+
+            while ((n = read(newfd, buffer, 128)) != 0)
+            {
+                if (n == -1)
+                    break; // exit(1);
+
+                ptr = &buffer[0];
+                while (n > 0)
+                {
+                    if ((nw = write(newfd, ptr, n)) <= 0)
+                        exit(1);
+                    n -= nw;
+                    ptr += nw;
+                    printf("%s", buffer);
+                }
+                for (int i = 0; i < 128; i++)
+                {
+                    buffer[i] = '\0';
+                }
+                ptr = NULL;
+            }
         }
     }
 
