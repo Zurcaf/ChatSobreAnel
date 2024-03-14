@@ -21,7 +21,7 @@ int main(void)
     hints.ai_family = AF_INET;       // IPv4
     hints.ai_socktype = SOCK_STREAM; // TCP socket
 
-    n = getaddrinfo("127.0.0.1", "58018", &hints, &res);
+    n = getaddrinfo("127.0.0.1", "58006", &hints, &res);
     if (n != 0) /*error*/
         exit(1);
 

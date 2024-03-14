@@ -14,6 +14,7 @@ int main(void)
     
     struct addrinfo hints, *res;
     ssize_t n, nw;
+
     struct sockaddr addr;
     socklen_t addrlen;
 
@@ -27,6 +28,7 @@ int main(void)
     hints.ai_family = AF_INET;       // IPv4
     hints.ai_socktype = SOCK_STREAM; // TCP socket
     hints.ai_flags = AI_PASSIVE;
+    
     if ((errcode = getaddrinfo("127.0.0.1", "58018", &hints, &res)) != 0)
         exit(1); /* error */
 

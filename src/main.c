@@ -119,17 +119,29 @@ int main(int argc, char *argv[])
 
         if (FD_ISSET(personal.fd, &readfds))
         {
+            char *ptr, buffer[128];
+
+            struct sockaddr addr;
+            socklen_t addrlen = sizeof(addr);
+
+            ssize_t n, nw;
+
             // Novas conexões no socket
-            // if ((newfd = accept(fd, &addr, &addrlen)) == -1) // preciso dos IP's das conexões?!? talvez não mas na ducida fica aqui
-            if ((newfd = accept(personal.fd, NULL, NULL)) == -1)
+            if ((newfd = accept(personal.fd, &addr, &addrlen)) == -1) 
                 exit(1); /* error */
 
-            printf("Connection accepted\n");
+            //get IP e porto do novo descritor
+            struct sockaddr_in *s = (struct sockaddr_in *)&addr;
+            int port = ntohs(s->sin_port);
+            char ip[INET_ADDRSTRLEN];
+            inet_ntop(AF_INET, &s->sin_addr, ip, sizeof ip);
+
+            printf("Connection from %s port %d\n", ip, port);
 
             while ((n = read(newfd, buffer, 128)) != 0)
             {
                 if (n == -1)
-                    break; // exit(1);
+                    break;   // exit(1);
 
                 ptr = &buffer[0];
                 while (n > 0)
@@ -140,11 +152,9 @@ int main(int argc, char *argv[])
                     ptr += nw;
                     printf("%s", buffer);
                 }
+
                 for (int i = 0; i < 128; i++)
-                {
                     buffer[i] = '\0';
-                }
-                ptr = NULL;
             }
         }
     }
