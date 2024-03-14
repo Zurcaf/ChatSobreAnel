@@ -6,9 +6,9 @@ int inputCheck(char* input, int *inputCount, char** inputArray);
 
 bool directJoin(NodeInfo personal, NodeInfo Succ);
 
-void newID (char* buffer, NodeInfo *personal);
+int newID (char* buffer, NodeInfo *personal, NodeInfo *succ, NodeInfo *succ2, NodeInfo *pred);
 
-bool join(NodeInfo personal, ServerInfo server, int ring);
+bool join(NodeInfo *personal, NodeInfo *succ, NodeInfo *succ2, NodeInfo *pred, ServerInfo server, int ring);
 
 bool directJoin(NodeInfo personal, NodeInfo Succ);
 

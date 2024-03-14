@@ -30,30 +30,30 @@ void inicializer(ServerInfo *server, NodeInfo *personal, NodeInfo *succ, NodeInf
     if (personal != NULL)
     {
         //inicializar personal
-        personal->id = 0;
+        personal->id = -1;
         strcpy(personal->IP, INIT_IP);
-        personal->TCP = 0;
-        personal->fd = 0;
+        personal->TCP = -1;
+        personal->fd = -1;
     }
     
 
     //inicializar succ
-    succ->id = 0;
+    succ->id = -1;
     strcpy(succ->IP, INIT_IP);
-    succ->TCP = 0;
-    succ->fd = 0;
+    succ->TCP = -1;
+    succ->fd = -1;
 
     //inicializar succ2
-    succ2->id = 0;
+    succ2->id = -1;
     strcpy(succ2->IP, INIT_IP);
-    succ2->TCP = 0;
-    succ2->fd = 0;
+    succ2->TCP = -1;
+    succ2->fd = -1;
 
     //inicializar pred  
-    pred->id = 0;
+    pred->id = -1;
     strcpy(pred->IP, INIT_IP);
-    pred->TCP = 0;
-    pred->fd = 0;
+    pred->TCP = -1;
+    pred->fd = -1;
 }
 
 void TCPServerInit(NodeInfo *server)

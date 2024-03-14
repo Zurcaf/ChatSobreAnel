@@ -42,7 +42,23 @@ clean:
 	rm -r $(OBJ)
 
 test:
-	$(BINDIR)/COR 127.0.0.1 58006
+	$(BINDIR)/COR 127.0.0.1 58009
+
+test1:
+	$(BINDIR)/COR 127.0.0.1 58001
+
+test2:
+	$(BINDIR)/COR 127.0.0.1 58002
+	
+test3:
+	$(BINDIR)/COR 127.0.0.1 58003
+
+test4:
+	$(BINDIR)/COR 127.0.0.1 58004
+
+test5:
+	$(BINDIR)/COR 127.0.0.1 58005
+
 
 debug:
 	gdb $(BINDIR)/COR 127.0.0.1 58002

@@ -173,10 +173,11 @@ int inputCheck(char* input, int *inputCount, char** inputArray)
     return 0;
 }
 
-void newID(char* buffer, NodeInfo *personal)
+int newID(char* buffer, NodeInfo *personal, NodeInfo *succ, NodeInfo *succ2, NodeInfo *pred)
 {
     int lineCount = 0;
-    char **lines = (char **)malloc(128 * sizeof(char *));
+    char **lines = (char **)malloc(MAX_NODES * sizeof(char *));
+    memoryCheck(lines);
     char *token;
 
     token = strtok(buffer, "\n");
@@ -197,57 +198,129 @@ void newID(char* buffer, NodeInfo *personal)
         lineCount += 1;
     }
     
+    //alocar memoria para um vetor de nós
+    NodeInfo **nodes = (NodeInfo **)malloc(MAX_NODES * sizeof(NodeInfo*));
+    memoryCheck(nodes);
 
-    int id = 0;
-    char* ip = (char *)malloc(15 * sizeof(char));
-    int port = 0;
-    bool flagID[99];
-
-    //inicializar flagID
-    for (int i = 0; i < 99; i++)
+    for (int i = 0; i < MAX_NODES; i++)
     {
-        flagID[i] = false;
+        //alocar memória para os nós
+        nodes[i] = (NodeInfo *)malloc(sizeof(NodeInfo));
+        memoryCheck(nodes[i]);
+        
+        //inicilizar os nós
+        nodes[i]->id = -1;
+        strcpy(nodes[i]->IP, INIT_IP);
+        nodes[i]->TCP = -1;
     }
+    
+    int aux1, aux2;
+    char aux3[MAX_IP_LENGTH];
 
+    //retirar informação sobre os nós
     for (int i = 1; i < lineCount; i++)
     {
-        sscanf(lines[i], "%d %s %d", &id, ip, &port);
-        flagID[id] = true;
+        sscanf(lines[i], "%d %s %d", &aux1, aux3, &aux2);
+        nodes[aux1]->id = aux1;
+        strcpy(nodes[aux1]->IP, aux3);
+        nodes[aux1]->TCP = aux2;
+        printf("ID: %02d\n", nodes[aux1]->id);
+        printf("IP: %s\n", nodes[aux1]->IP);
+        printf("TCP: %05d\n", nodes[aux1]->TCP);
     }
 
-    if (flagID[personal->id] == true)
-    {        
-        personal->id = 1;
-
-        while (1)
+    //libertar memoria das linhas
+    for (int i = 0; i < 17; i++)
+        free(lines[i]);
+    
+    free(lines);
+    
+    if (nodes[personal->id]->id != -1)
+    {
+        for (int i = personal->id; i < MAX_NODES; i++)
         {
-            if (flagID[personal->id]==false)
+            printf("IDssssss: %02d\n", nodes[personal->id]->id);
+            if (nodes[i]->id == -1)
+            {
+                personal->id = i;
                 break;
-            personal->id+=1;
+            }
         }
         printf("ID already in use. New ID: %02d\n", personal->id);
     }
-    return;
+    if (nodes[personal->id]->id != -1)
+    {
+        for (int i = 0; i < personal->id; i++)
+        {
+            printf("IDttttttt: %02d\n", personal->id);
+            if (nodes[i]->id == -1)
+            {
+                personal->id = i;
+                break;
+            }
+        }
+        printf("ID already in use. New ID: %02d\n", personal->id);
+    }
+
+    //inicilizar succ, succ2 e pred ids
+    succ->id = personal->id;
+    succ2->id = personal->id;
+    pred->id = personal->id;
+        
+    //encontrar o sucessor
+    if (nodes[succ->id]->id == -1 && lineCount > 0)
+    {
+        for (int i = personal->id + 1; i < MAX_NODES; i++)
+        {
+            printf ("ID: %02d\n", nodes[i]->id);
+            if (nodes[i]->id != -1)
+            {
+                succ->id = i;
+                break;
+            }
+        }
+    }
+    if (nodes[succ->id]->id == -1 && lineCount != 0)
+    {    
+        for (int i = 0; i < personal->id; i++)
+        {
+            printf ("ID: %02d\n", nodes[i]->id);
+            if (nodes[i]->id != -1)
+            {
+                succ->id = i;
+                break;
+            }
+        }
+    }
+
+    strcpy(succ->IP, nodes[succ->id]->IP);
+    succ->TCP = nodes[succ->id]->TCP;
+
+    for (int i = 0; i < MAX_NODES; i++)
+        free(nodes[i]);
+
+    free(nodes);
+
+    return lineCount;
 }
 
+
 //Implementação dos comandos da interface com o utlizador (4.2)
-bool join(NodeInfo personal, ServerInfo server, int ring)
+bool join(NodeInfo *personal, NodeInfo *succ, NodeInfo *succ2, NodeInfo *pred, ServerInfo server, int ring)
 {
     int fd, errcode;
     char buffer[200];
 
     char aux_str[8];
 
-    //inicializar buffer
-    for(int i = 0; i < 200; i++)
-    {
-        buffer[i] = '0';
-    }
-
     struct sockaddr addr;
     socklen_t addrlen;
     ssize_t n;
     struct addrinfo hints, *res;
+
+    //inicializar buffer
+    for(int i = 0; i < 200; i++)
+        buffer[i] = '0';
 
     // socket creation and verification
     fd = socket(AF_INET, SOCK_DGRAM, 0); // UDP socket
@@ -258,8 +331,10 @@ bool join(NodeInfo personal, ServerInfo server, int ring)
     hints.ai_family = AF_INET;      // IPv4
     hints.ai_socktype = SOCK_DGRAM; // UDP socket
 
+    //conversão de int para string
     sprintf(aux_str, "%d", server.regUDP);
 
+    //receber informação do servidor
     errcode = getaddrinfo(server.regIP, aux_str, &hints, &res);
     if (errcode != 0)
     { /*error*/
@@ -285,12 +360,19 @@ bool join(NodeInfo personal, ServerInfo server, int ring)
 
     buffer[n] = '\0';
 
-    newID(buffer, &personal);
+    // Confirmar que o ID do nó não está a ser usado
+    newID(buffer, personal, succ, succ2, pred);
 
+    printf("\nID: %02d\n", personal->id);
+    printf("Succ ID: %02d\n", succ->id);
+    printf("Succ IP: %s\n", succ->IP);
+    printf("Succ Port: %d\n", succ->TCP);
+
+    //registo do nó no servidor
     for(int i = 0; i < 200; i++)
         buffer[i] = '0';
 
-    sprintf(buffer, "REG %03d %02d %s %05d", ring, personal.id, personal.IP, personal.TCP);
+    sprintf(buffer, "REG %03d %02d %s %05d", ring, personal->id, personal->IP, personal->TCP);
     n = sendto(fd, buffer, strlen(buffer), 0, res->ai_addr, res->ai_addrlen);
     if (n == -1)
     { /*error*/

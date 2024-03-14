@@ -20,7 +20,8 @@
 #define MAX_IP_LENGTH 16 // IPv4 has at most 15 characters +1 for the null terminator
 #define MAX_PORT_LENGTH 5 // 65535 has 5 characters +1 for the null terminator
 #define MAX_ARGUMENTS 7
-#define INIT_IP "0000000000000000"
+#define MAX_NODES 18
+#define INIT_IP "000000000000000"
 
 #define MAX_PUT 100
 #define WORD_LEN_MAX 70

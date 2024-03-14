@@ -72,7 +72,7 @@ int main(int argc, char *argv[])
                 case 1:
                     ring = atoi(arguments[1]);
                     personal.id = atoi(arguments[2]);
-                    join(personal, server, ring);
+                    join(&personal, &succ, &succ2, &pred, server, ring);
                     break;
                 case 2:
                     personal.id = atoi(arguments[1]);
