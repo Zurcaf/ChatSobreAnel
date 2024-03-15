@@ -126,10 +126,7 @@ int main(int argc, char *argv[])
 
             listeningChanelInterpret(&newfd, &pred);
 
-
             printf("Pred: %d %d, %d\n", pred.id, pred.fd, newfd);
-
-            
         }
     }
 

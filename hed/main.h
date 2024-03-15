@@ -21,6 +21,7 @@
 #define MAX_PORT_LENGTH 5 // 65535 has 5 characters +1 for the null terminator
 #define MAX_ARGUMENTS 7
 #define MAX_NODES 18
+#define MAX_BUFFER 200
 #define INIT_IP "000000000000000"
 
 #define MAX_PUT 100
@@ -40,6 +41,7 @@ typedef struct _serverInfo
 {
     char regIP[MAX_IP_LENGTH];
     int regUDP;
+    int fd;
 } ServerInfo;
 
 

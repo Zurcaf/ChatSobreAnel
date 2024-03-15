@@ -7,6 +7,9 @@ void memoryCheck(void *ptr);
 //verificar se o ficheiro foi bem aberto
 void fileCheck(FILE *filePointer, char *fileName);
 
+//inicilizar buffer
+void bufferInit(char *buffer);
+
 //inicialização dos valores das estruturas
 void inicializer(ServerInfo *server, NodeInfo *personal, NodeInfo *succ, NodeInfo *succ2, NodeInfo *pred);
 
@@ -27,5 +30,10 @@ void argsCheck(int argc, char *argv[], char *IP, int *TCP, char *regIP, int *reg
 
 //verificação do canal de escuta
 void listeningChanelInterpret(int *newfd, NodeInfo *pred);
+
+//envio de mensagens para o servidor (UDP)
+void sendToServer(ServerInfo server, char* buffer);
+
+void messageTokenize(char *message, char **inputArray, int *inputCount, char delim);
 
 #endif

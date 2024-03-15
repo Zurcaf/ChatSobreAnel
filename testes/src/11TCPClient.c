@@ -55,34 +55,6 @@ int main(void)
         }
         ptr = NULL;
 
-        for (int i = 0; i < 128; i++)
-            buffer[i] = '\0';
-
-                printf("Closing connection\n");
-    ssize_t ne, nw;
-    while (1)
-    {
-    
-        ne = read(fd, buffer, sizeof(buffer));
-        if (ne == -1)
-        {
-            printf("error reading listennig chanel\n");
-        }
-
-        ptr = &buffer[0];
-
-        while (ne > 0)
-        {
-            if ((nw = write(fd, ptr, ne)) <= 0)
-                exit(1);
-            ne -= nw;
-            ptr += nw;
-        }
-        buffer[sizeof(buffer)] = '\0';
     }
-    }
-
-    
-
     close(fd);
 }
