@@ -453,3 +453,13 @@ void leave(int ring, NodeInfo personal, ServerInfo server)
     close(fd);
     return;
 }
+
+void ShowTopology(NodeInfo personal, NodeInfo succ, NodeInfo succ2, NodeInfo pred)
+{
+    printf("Me: \n ID: %02d\n, IP: %s\n, TCP: %d\n",  personal.id, personal.IP, personal.TCP);
+    printf("Succ: \n ID: %02d\n, IP: %s\n, TCP: %d\n",  succ.id, succ.IP, succ.TCP);
+    printf("Succ2: \n ID: %02d\n, IP: %s\n, TCP: %d\n",  succ2.id, succ2.IP, succ2.TCP);
+    printf("completar com a informação da corda, se existir...");
+    return;
+
+}
