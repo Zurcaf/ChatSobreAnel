@@ -365,3 +365,89 @@ void listeningChanelInterpret(int *newfd, NodeInfo *pred)
     free(inputArray);
     
 }
+
+void bufferInit(char *buffer)
+{
+    for (int i = 0; i < MAX_BUFFER; i++)
+        buffer[i] = '0';
+    
+    buffer[MAX_BUFFER] = '\0';
+}
+
+void sendToServer (ServerInfo server, char* buffer)
+{
+    char aux_str[8];
+    int fd, errcode;
+
+    struct sockaddr addr;
+    socklen_t addrlen;
+    ssize_t n;
+    struct addrinfo hints, *res;
+
+    addrlen = sizeof(addr);
+
+
+    // socket creation and verification
+    fd = socket(AF_INET, SOCK_DGRAM, 0); // UDP socket
+    if (fd == -1)                        /*error*/
+        exit(1);
+
+    memset(&hints, 0, sizeof hints);
+    hints.ai_family = AF_INET;      // IPv4
+    hints.ai_socktype = SOCK_DGRAM; // UDP socket
+
+    //conversão de int para string
+    sprintf(aux_str, "%d", server.regUDP);
+
+    //receber informação do servidor
+    errcode = getaddrinfo(server.regIP, aux_str, &hints, &res);
+    if (errcode != 0)
+    { /*error*/
+        printf("Error connecting");
+        exit(1);
+    }
+
+    n = sendto(fd, buffer, strlen(buffer), 0, res->ai_addr, res->ai_addrlen);
+    if (n == -1)
+    { /*error*/
+        printf("Error messaging.");
+        exit(1);
+    }
+    
+    bufferInit(buffer);
+
+    n = recvfrom(fd, buffer, strlen(buffer), 0, &addr, &addrlen);
+    if (n == -1) /*error*/
+        exit(1);
+
+    buffer[n] = '\0';
+
+    freeaddrinfo(res);
+    close(fd);
+}
+
+void messageTokenize(char *message, char **inputArray, int *inputCount, char delim)
+{
+    char *token, buffer[MAX_BUFFER];
+
+    strcpy(buffer, message);
+
+    token = strtok(buffer, &delim);
+
+    while (*inputCount < MAX_NODES)
+    {
+        if (token == NULL)
+            break;
+
+        inputArray[*inputCount] = (char *)malloc(strlen(token) + 1);
+        memoryCheck(inputArray[*inputCount]);
+
+        strcpy(inputArray[*inputCount], token);
+        strcat(inputArray[strlen(token)], "\0");
+
+        *inputCount+= 1;
+
+        token = strtok(NULL, &delim);
+    }
+    
+}

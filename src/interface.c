@@ -173,65 +173,8 @@ int inputCheck(char* input, int *inputCount, char** inputArray)
     return 0;
 }
 
-int newID(char* buffer, NodeInfo *personal, NodeInfo *succ, NodeInfo *succ2, NodeInfo *pred)
-{
-    int lineCount = 0;
-    char **lines = (char **)malloc(MAX_NODES * sizeof(char *));
-    memoryCheck(lines);
-    char *token;
-
-    token = strtok(buffer, "\n");
-
-    while (lineCount < 17)
-    {
-        if (token == NULL)
-            break;
-
-        lines[lineCount] = (char *)malloc(strlen(token) + 1);
-        memoryCheck(lines[lineCount]);
-        
-
-        strcpy(lines[lineCount], token);
-        strcat(lines[lineCount], "\0");
-
-        token = strtok(NULL, "\n");
-        lineCount += 1;
-    }
-    
-    //alocar memoria para um vetor de nós
-    NodeInfo **nodes = (NodeInfo **)malloc(MAX_NODES * sizeof(NodeInfo*));
-    memoryCheck(nodes);
-
-    for (int i = 0; i < MAX_NODES; i++)
-    {
-        //alocar memória para os nós
-        nodes[i] = (NodeInfo *)malloc(sizeof(NodeInfo));
-        memoryCheck(nodes[i]);
-        
-        //inicilizar os nós
-        nodes[i]->id = -1;
-        strcpy(nodes[i]->IP, INIT_IP);
-        nodes[i]->TCP = -1;
-    }
-    
-    int aux1, aux2;
-    char aux3[MAX_IP_LENGTH];
-
-    //retirar informação sobre os nós
-    for (int i = 1; i < lineCount; i++)
-    {
-        sscanf(lines[i], "%d %s %d", &aux1, aux3, &aux2);
-        nodes[aux1]->id = aux1;
-        strcpy(nodes[aux1]->IP, aux3);
-        nodes[aux1]->TCP = aux2;
-    }
-
-    //libertar memoria das linhas
-    for (int i = 0; i < 17; i++)
-        free(lines[i]);
-    
-    free(lines);
-    
+void newPersonalID(NodeInfo** nodes, NodeInfo *personal)
+{  
     if (nodes[personal->id]->id != -1)
     {
         for (int i = personal->id; i < MAX_NODES; i++)
@@ -257,15 +200,15 @@ int newID(char* buffer, NodeInfo *personal, NodeInfo *succ, NodeInfo *succ2, Nod
         printf("ID already in use. New ID: %02d\n", personal->id);
     }
 
-    //inicilizar succ, succ2 e pred ids
-    succ->id = personal->id;
-    succ2->id = personal->id;
-    pred->id = personal->id;
-        
+    return;
+}
+
+void newSuccID(NodeInfo** nodes, NodeInfo *personal, NodeInfo *succ)
+{
     //encontrar o sucessor
-    if (nodes[succ->id]->id == -1 && lineCount > 0)
+    if (nodes[succ->id]->id == -1)
     {
-        for (int i = personal->id + 1; i < MAX_NODES; i++)
+        for (int i = succ->id; i < MAX_NODES; i++)
         {
             if (nodes[i]->id != -1)
             {
@@ -274,7 +217,8 @@ int newID(char* buffer, NodeInfo *personal, NodeInfo *succ, NodeInfo *succ2, Nod
             }
         }
     }
-    if (nodes[succ->id]->id == -1 && lineCount != 0)
+
+    if (nodes[succ->id]->id == -1)
     {    
         for (int i = 0; i < personal->id; i++)
         {
@@ -289,101 +233,92 @@ int newID(char* buffer, NodeInfo *personal, NodeInfo *succ, NodeInfo *succ2, Nod
     strcpy(succ->IP, nodes[succ->id]->IP);
     succ->TCP = nodes[succ->id]->TCP;
 
-    for (int i = 0; i < MAX_NODES; i++)
-        free(nodes[i]);
-
-    free(nodes);
-
-    return lineCount;
+    printf("Succ ID: %02d\n", succ->id);
+    printf("Succ IP: %s\n", succ->IP);
+    printf("Succ TCP: %05d\n", succ->TCP);
 }
 
 
 //Implementação dos comandos da interface com o utlizador (4.2)
-bool join(NodeInfo *personal, NodeInfo *succ, NodeInfo *succ2, NodeInfo *pred, ServerInfo server, int ring)
+void join(NodeInfo *personal, NodeInfo *succ, NodeInfo *succ2, NodeInfo *pred, ServerInfo server, int ring)
 {
-    int fd, errcode;
-    char buffer[200];
-
-    char aux_str[8];
-
-    struct sockaddr addr;
-    socklen_t addrlen;
-    ssize_t n;
-    struct addrinfo hints, *res;
+    int lineCounter = 0;
+    int infoCounter = 0;
+    char message[200];
 
     //inicializar buffer
-    for(int i = 0; i < 200; i++)
-        buffer[i] = '0';
+    bufferInit(message);
 
-    // socket creation and verification
-    fd = socket(AF_INET, SOCK_DGRAM, 0); // UDP socket
-    if (fd == -1)                        /*error*/
-        exit(1);
+    sprintf(message, "NODES %03d", ring);
+    sendToServer(server, message);
 
-    memset(&hints, 0, sizeof hints);
-    hints.ai_family = AF_INET;      // IPv4
-    hints.ai_socktype = SOCK_DGRAM; // UDP socket
+    //alocar memoria para um vetor de linhas
+    char **lines = (char **)malloc(MAX_NODES * sizeof(char *));
+    memoryCheck(lines);
 
-    //conversão de int para string
-    sprintf(aux_str, "%d", server.regUDP);
+    messageTokenize (message, lines, &lineCounter, '\n');
 
-    //receber informação do servidor
-    errcode = getaddrinfo(server.regIP, aux_str, &hints, &res);
-    if (errcode != 0)
-    { /*error*/
-        printf("Error connecting");
-        exit(1);
+    char **information = (char **)malloc(MAX_NODES * sizeof(char *));
+    memoryCheck(information);
+
+    NodeInfo **nodes = (NodeInfo **)malloc(MAX_NODES * sizeof(NodeInfo*));
+    memoryCheck(nodes);
+
+    for (int i = 0; i < MAX_NODES; i++)
+    {
+        nodes[i] = (NodeInfo *)malloc(sizeof(NodeInfo));
+        memoryCheck(nodes[i]);
+
+        nodes[i]->id = -1;
     }
 
-    sprintf(buffer, "NODES %03d", ring);
-    n = sendto(fd, buffer, strlen(buffer), 0, res->ai_addr, res->ai_addrlen);
-    if (n == -1)
-    { /*error*/
-        printf("Error messaging.");
-        exit(1);
+    for (int i = 1; i < lineCounter; i++)
+    {
+        messageTokenize(lines[i], information, &infoCounter, ' ');
+
+        nodes[atoi(information[0])]->id = atoi(information[0]);
+        strcpy(nodes[atoi(information[0])]->IP, information[1]);
+        nodes[atoi(information[0])]->TCP = atoi(information[2]);
+
+        for (int j = 0; j < infoCounter; j++)
+        {
+            free(information[j]);
+        }
+        free(information);
+
+        free(lines[i]);
+        infoCounter = 0;
     }
-
-    for(int i = 0; i < 200; i++)
-        buffer[i] = '0';
-
-    addrlen = sizeof(addr);
-    n = recvfrom(fd, buffer, 200, 0, &addr, &addrlen);
-    if (n == -1) /*error*/
-        exit(1);
-
-    buffer[n] = '\0';
+    free(lines);
 
     // Confirmar que o ID do nó não está a ser usado
-    newID(buffer, personal, succ, succ2, pred);
+    newPersonalID(nodes, personal);
 
-    // Registo do nó no servidor
-    for(int i = 0; i < 200; i++)
-        buffer[i] = '0';
-
-    sprintf(buffer, "REG %03d %02d %s %05d", ring, personal->id, personal->IP, personal->TCP);
-    n = sendto(fd, buffer, strlen(buffer), 0, res->ai_addr, res->ai_addrlen);
-    if (n == -1)
-    { /*error*/
-        printf("Error messaging.");
-        exit(1);
+    //encontrar o proximo nó
+    if (lineCounter > 1)
+    {
+        succ->id = personal->id + 1;
+        newSuccID(nodes, personal, succ);
+    }
+    
+    for (int i = 0; i < MAX_NODES; i++)
+    {
+        free(nodes[i]);
     }
 
-    for(int i = 0; i < 200; i++)
-        buffer[i] = '0';
+    free(nodes);
 
-    freeaddrinfo(res);
+    //call direct join
+    directJoin(*personal, *succ);
 
-    addrlen = sizeof(addr);
-    n = recvfrom(fd, buffer, 200, 0, &addr, &addrlen);
-    if (n == -1) /*error*/
-        exit(1);
+    // Registo do nó no servidor
+    bufferInit(message);
+    sprintf(message, "REG %03d %02d %s %05d", ring, personal->id, personal->IP, personal->TCP);
+    
+    sendToServer(server, message);
+    printf("%s\n", message);
 
-    buffer[n] = '\0';
-
-    printf("%s\n", buffer);
-
-    close(fd);
-    return true;
+    return;
 }
 
 bool directJoin(NodeInfo personal, NodeInfo Succ)
