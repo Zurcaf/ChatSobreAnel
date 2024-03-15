@@ -21,7 +21,7 @@ int main(void)
     hints.ai_family = AF_INET;       // IPv4
     hints.ai_socktype = SOCK_STREAM; // TCP socket
 
-    n = getaddrinfo("127.0.0.1", "58006", &hints, &res);
+    n = getaddrinfo("127.0.0.1", "58009", &hints, &res);
     if (n != 0) /*error*/
         exit(1);
 
@@ -54,7 +54,35 @@ int main(void)
             buffer[i] = '0';
         }
         ptr = NULL;
+
+        for (int i = 0; i < 128; i++)
+            buffer[i] = '\0';
+
+                printf("Closing connection\n");
+    ssize_t ne, nw;
+    while (1)
+    {
+    
+        ne = read(fd, buffer, sizeof(buffer));
+        if (ne == -1)
+        {
+            printf("error reading listennig chanel\n");
+        }
+
+        ptr = &buffer[0];
+
+        while (ne > 0)
+        {
+            if ((nw = write(fd, ptr, ne)) <= 0)
+                exit(1);
+            ne -= nw;
+            ptr += nw;
+        }
+        buffer[sizeof(buffer)] = '\0';
     }
+    }
+
+    
 
     close(fd);
 }

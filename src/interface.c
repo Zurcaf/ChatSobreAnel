@@ -224,9 +224,6 @@ int newID(char* buffer, NodeInfo *personal, NodeInfo *succ, NodeInfo *succ2, Nod
         nodes[aux1]->id = aux1;
         strcpy(nodes[aux1]->IP, aux3);
         nodes[aux1]->TCP = aux2;
-        printf("ID: %02d\n", nodes[aux1]->id);
-        printf("IP: %s\n", nodes[aux1]->IP);
-        printf("TCP: %05d\n", nodes[aux1]->TCP);
     }
 
     //libertar memoria das linhas
@@ -239,7 +236,6 @@ int newID(char* buffer, NodeInfo *personal, NodeInfo *succ, NodeInfo *succ2, Nod
     {
         for (int i = personal->id; i < MAX_NODES; i++)
         {
-            printf("IDssssss: %02d\n", nodes[personal->id]->id);
             if (nodes[i]->id == -1)
             {
                 personal->id = i;
@@ -252,7 +248,6 @@ int newID(char* buffer, NodeInfo *personal, NodeInfo *succ, NodeInfo *succ2, Nod
     {
         for (int i = 0; i < personal->id; i++)
         {
-            printf("IDttttttt: %02d\n", personal->id);
             if (nodes[i]->id == -1)
             {
                 personal->id = i;
@@ -272,7 +267,6 @@ int newID(char* buffer, NodeInfo *personal, NodeInfo *succ, NodeInfo *succ2, Nod
     {
         for (int i = personal->id + 1; i < MAX_NODES; i++)
         {
-            printf ("ID: %02d\n", nodes[i]->id);
             if (nodes[i]->id != -1)
             {
                 succ->id = i;
@@ -284,7 +278,6 @@ int newID(char* buffer, NodeInfo *personal, NodeInfo *succ, NodeInfo *succ2, Nod
     {    
         for (int i = 0; i < personal->id; i++)
         {
-            printf ("ID: %02d\n", nodes[i]->id);
             if (nodes[i]->id != -1)
             {
                 succ->id = i;
@@ -363,12 +356,7 @@ bool join(NodeInfo *personal, NodeInfo *succ, NodeInfo *succ2, NodeInfo *pred, S
     // Confirmar que o ID do nó não está a ser usado
     newID(buffer, personal, succ, succ2, pred);
 
-    printf("\nID: %02d\n", personal->id);
-    printf("Succ ID: %02d\n", succ->id);
-    printf("Succ IP: %s\n", succ->IP);
-    printf("Succ Port: %d\n", succ->TCP);
-
-    //registo do nó no servidor
+    // Registo do nó no servidor
     for(int i = 0; i < 200; i++)
         buffer[i] = '0';
 

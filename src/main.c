@@ -47,13 +47,12 @@ int main(int argc, char *argv[])
     printf("------------------------------------------------------------\n");
     printf("Available comands:\njoin (j) ring id\ndirect join (dj) id succid succIP succTCP\nchord (c)\nremove chord (rc)\nshow topology (st)\nshow routing (sr) dest\nshow path (sp) dest\nshow forwarding (sf)\nmessage (m) dest message\nleave (l)\nexit (x)\n");
     printf("------------------------------------------------------------\n");
+    printf("Insert command: \n");
 
     while (1)
     {
         // Inicialização dos descritores para o select
         SETs_Init(&readfds, &maxfd, personal.fd, succ.fd, succ2.fd, pred.fd);
-
-        printf("Insert command: \n");
 
         // Espera por atividade com o select
         if (select(maxfd + 1, &readfds, NULL, NULL, NULL) == -1)
@@ -115,47 +114,22 @@ int main(int argc, char *argv[])
                 free(arguments[i]);
             }
             free(arguments);
+
+            printf("Insert command: \n");
         }
 
         if (FD_ISSET(personal.fd, &readfds))
         {
-            char *ptr, buffer[128];
-
-            struct sockaddr addr;
-            socklen_t addrlen = sizeof(addr);
-
-            ssize_t n, nw;
-
             // Novas conexões no socket
-            if ((newfd = accept(personal.fd, &addr, &addrlen)) == -1) 
+            if ((newfd = accept(personal.fd, NULL, NULL)) == -1) 
                 exit(1); /* error */
 
-            //get IP e porto do novo descritor
-            struct sockaddr_in *s = (struct sockaddr_in *)&addr;
-            int port = ntohs(s->sin_port);
-            char ip[INET_ADDRSTRLEN];
-            inet_ntop(AF_INET, &s->sin_addr, ip, sizeof ip);
+            listeningChanelInterpret(&newfd, &pred);
 
-            printf("Connection from %s port %d\n", ip, port);
 
-            while ((n = read(newfd, buffer, 128)) != 0)
-            {
-                if (n == -1)
-                    break;   // exit(1);
+            printf("Pred: %d %d, %d\n", pred.id, pred.fd, newfd);
 
-                ptr = &buffer[0];
-                while (n > 0)
-                {
-                    if ((nw = write(newfd, ptr, n)) <= 0)
-                        exit(1);
-                    n -= nw;
-                    ptr += nw;
-                    printf("%s", buffer);
-                }
-
-                for (int i = 0; i < 128; i++)
-                    buffer[i] = '\0';
-            }
+            
         }
     }
 

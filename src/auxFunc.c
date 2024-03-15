@@ -54,6 +54,7 @@ void inicializer(ServerInfo *server, NodeInfo *personal, NodeInfo *succ, NodeInf
     strcpy(pred->IP, INIT_IP);
     pred->TCP = -1;
     pred->fd = -1;
+
 }
 
 void TCPServerInit(NodeInfo *server)
@@ -256,3 +257,111 @@ void argsCheck(int argc, char *argv[], char *IP, int *TCP, char *regIP, int *reg
     }
 }
 
+void listeningChanelInterpret(int *newfd, NodeInfo *pred)
+{
+    char *ptr, buffer[128];
+    ssize_t n, nw;
+
+    for (int i = 0; i < 128; i++)
+        buffer[i] = '\0';
+
+    n = read(*newfd, buffer, sizeof(buffer));
+    if (n == -1)
+    {
+        printf("error reading listennig chanel\n");
+        return; // error
+    }
+        
+    ptr = &buffer[0];
+    
+    while (n > 0)
+    {
+        if ((nw = write(*newfd, ptr, n)) <= 0)
+            exit(1);
+        n -= nw;
+        ptr += nw;
+    }
+    buffer[sizeof(buffer)] = '\0';
+
+    int inputCount = 0;
+    char *token, bufferCopy[128];
+
+    strcpy(bufferCopy, buffer);
+
+    token = strtok(buffer, " ");
+
+
+    char **inputArray = (char **)malloc(MAX_ARGUMENTS * sizeof(char *));
+    memoryCheck(inputArray);
+
+    while (inputCount < MAX_ARGUMENTS)
+    {
+        if (token == NULL)
+            break;
+
+        inputArray[inputCount] = (char *)malloc(strlen(token) + 1);
+        memoryCheck(inputArray[inputCount]);
+
+        strcpy(inputArray[inputCount], token);
+        strcat(inputArray[inputCount], "\0");
+
+        token = strtok(NULL, " ");
+        inputCount+= 1;
+    }
+    
+    inputArray[inputCount - 1][strlen(inputArray[inputCount - 1]) - 1] = '\0'; // Remover o \n do último argumento
+    inputArray[inputCount] = NULL;                                  // Marcar o final da lista de argumentos
+
+
+    ssize_t nbytes, nleft, nwritten;
+    
+    switch (inputCount)
+    {
+    case 2:
+        if (strcmp(inputArray[0], "PRED") == 0)
+        {
+            pred->id = atoi(inputArray[1]);
+            pred->fd = *newfd;
+        }
+        break;
+    case 4:
+        if (strcmp(inputArray[0], "ENTRY") == 0)
+        {
+            pred->fd = *newfd;
+            if (pred->fd != -1)
+            {
+                //enviar para o predecessor
+                ptr = bufferCopy;
+                nbytes = strlen(bufferCopy);
+                nleft = nbytes;
+
+                while (nleft > 0)
+                {
+                    printf("nleft %ld\n", nleft);
+                    nwritten = write(pred->fd, ptr, nleft);
+                    if (nwritten <= 0) /*error*/
+                        exit(1);
+                    nleft -= nwritten;
+                    ptr += nwritten;
+                }
+                printf("copyyy %s", bufferCopy);
+                // close(pred->fd);
+            }
+            pred->fd = *newfd;
+            pred->id = atoi(inputArray[1]);
+            strcpy(pred->IP, inputArray[2]);
+            pred->TCP = atoi(inputArray[3]);
+            printf("Entry: %d %s %d\n", pred->id, pred->IP, pred->TCP);
+        }
+        break;
+    default:
+        break;
+    }
+    
+    for (int i = 0; i < inputCount; i++)
+    {
+        free(inputArray[i]);
+    }
+    free(inputArray);
+    
+}
