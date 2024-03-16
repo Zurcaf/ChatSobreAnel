@@ -14,10 +14,19 @@ void bufferInit(char *buffer);
 void inicializer(ServerInfo *server, NodeInfo *personal, NodeInfo *succ, NodeInfo *succ2, NodeInfo *pred);
 
 //inicio de uma conexão TCP (servidor)
-void TCPServerInit(NodeInfo *server);
+void tcpServerInit(NodeInfo *server);
 
 //inicio de uma conexão TCP (cliente)
-void TCPClientInit(NodeInfo *client);
+void tcpClientInit(NodeInfo *client);
+
+void tcpSend(NodeInfo dest, char *buffer);
+
+void tcpReceive (int *newfd, NodeInfo *pred);
+
+//envio de mensagens para o servidor (UDP)
+void nodeServSend(ServerInfo server, char* buffer);
+
+void messageTokenize(char *message, char **inputArray, int *inputCount, char delim);
 
 //inicializar SET's dos descritores
 void SETs_Init(fd_set *readfds, int *maxfd, int personal_fd, int succ_fd, int succ2_fd, int pred_fd);
@@ -30,10 +39,5 @@ void argsCheck(int argc, char *argv[], char *IP, int *TCP, char *regIP, int *reg
 
 //verificação do canal de escuta
 void listeningChanelInterpret(int *newfd, NodeInfo *pred);
-
-//envio de mensagens para o servidor (UDP)
-void sendToServer(ServerInfo server, char* buffer);
-
-void messageTokenize(char *message, char **inputArray, int *inputCount, char delim);
 
 #endif

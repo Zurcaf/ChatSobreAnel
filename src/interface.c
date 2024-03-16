@@ -232,12 +232,23 @@ void newSuccID(NodeInfo** nodes, NodeInfo *personal, NodeInfo *succ)
 
     strcpy(succ->IP, nodes[succ->id]->IP);
     succ->TCP = nodes[succ->id]->TCP;
-
-    printf("Succ ID: %02d\n", succ->id);
-    printf("Succ IP: %s\n", succ->IP);
-    printf("Succ TCP: %05d\n", succ->TCP);
 }
 
+void directJoin(NodeInfo personal, NodeInfo Succ)
+{
+    char message[MAX_BUFFER];
+
+    //inicializar buffer
+    bufferInit(message);
+
+    TCPClientInit(&Succ);
+
+    sprintf(message, "ENTRY %02d %s %05d", personal.id, personal.IP, personal.TCP);
+
+    TCPClientSend(Succ, message);
+
+    return;
+}
 
 //Implementação dos comandos da interface com o utlizador (4.2)
 void join(NodeInfo *personal, NodeInfo *succ, NodeInfo *succ2, NodeInfo *pred, ServerInfo server, int ring)
@@ -294,11 +305,21 @@ void join(NodeInfo *personal, NodeInfo *succ, NodeInfo *succ2, NodeInfo *pred, S
     // Confirmar que o ID do nó não está a ser usado
     newPersonalID(nodes, personal);
 
+    //inicializar ID's dos nós
+    succ->id = personal->id;
+    pred->id = personal->id;
+    succ2->id = personal->id;
+
     //encontrar o proximo nó
     if (lineCounter > 1)
     {
         succ->id = personal->id + 1;
         newSuccID(nodes, personal, succ);
+
+        printf("Call do DJ\nSucc ID: %02d\n", succ->id);
+
+        //call direct join
+        directJoin(*personal, *succ);
     }
     
     for (int i = 0; i < MAX_NODES; i++)
@@ -308,9 +329,6 @@ void join(NodeInfo *personal, NodeInfo *succ, NodeInfo *succ2, NodeInfo *pred, S
 
     free(nodes);
 
-    //call direct join
-    directJoin(*personal, *succ);
-
     // Registo do nó no servidor
     bufferInit(message);
     sprintf(message, "REG %03d %02d %s %05d", ring, personal->id, personal->IP, personal->TCP);
@@ -319,13 +337,6 @@ void join(NodeInfo *personal, NodeInfo *succ, NodeInfo *succ2, NodeInfo *pred, S
     printf("%s\n", message);
 
     return;
-}
-
-bool directJoin(NodeInfo personal, NodeInfo Succ)
-{
-    
-
-    return true;
 }
 
 void leave(int ring, NodeInfo personal, ServerInfo server)
@@ -389,12 +400,12 @@ void leave(int ring, NodeInfo personal, ServerInfo server)
     return;
 }
 
-void ShowTopology(NodeInfo personal, NodeInfo succ, NodeInfo succ2, NodeInfo pred)
+void showTopology(NodeInfo personal, NodeInfo succ, NodeInfo succ2, NodeInfo pred)
 {
     printf("Me: \n ID: %02d\n, IP: %s\n, TCP: %d\n",  personal.id, personal.IP, personal.TCP);
+    printf("Pred: \n ID: %02d\n",  pred.id);
     printf("Succ: \n ID: %02d\n, IP: %s\n, TCP: %d\n",  succ.id, succ.IP, succ.TCP);
     printf("Succ2: \n ID: %02d\n, IP: %s\n, TCP: %d\n",  succ2.id, succ2.IP, succ2.TCP);
     printf("completar com a informação da corda, se existir...");
     return;
-
 }

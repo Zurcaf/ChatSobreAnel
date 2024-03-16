@@ -18,7 +18,7 @@ int main(int argc, char *argv[])
     // int errcode;
 
     // variaveis com informação do servidor e do nó   
-    int ring = 0;
+    int ring = -1;
     ServerInfo server;
     NodeInfo personal;
     NodeInfo succ;
@@ -87,7 +87,7 @@ int main(int argc, char *argv[])
                     //removeChord();
                     break;
                 case 5:
-                    //showTopology();
+                    showTopology(personal, succ, succ2, pred);
                     break;
                 case 6:
                     //showRouting();
@@ -114,9 +114,12 @@ int main(int argc, char *argv[])
                 free(arguments[i]);
             }
             free(arguments);
+            command = 0;
 
             printf("Insert command: \n");
         }
+
+        
 
         if (FD_ISSET(personal.fd, &readfds))
         {
@@ -124,8 +127,29 @@ int main(int argc, char *argv[])
             if ((newfd = accept(personal.fd, NULL, NULL)) == -1) 
                 exit(1); /* error */
 
-            listeningChanelInterpret(&newfd, &pred);
+            
 
+            command = listeningChanelInterpret(&newfd);
+
+            switch (command)
+            {
+                case 0:
+                    printf("Error in the listening channel (comando não reconhecido)\n"); 
+                    break;
+                //caso seja um ENTRY
+                case 1:
+
+                    break;
+
+                //caso seja um PRED
+                case 2:
+                    break;
+
+                //caso seja um CHORD
+                case 3:
+                    break;
+            }
+            command = 0;
             printf("Pred: %d %d, %d\n", pred.id, pred.fd, newfd);
         }
     }

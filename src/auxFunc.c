@@ -18,6 +18,14 @@ void fileCheck(FILE *filePointer, char *fileName)
     }
 }
 
+void bufferInit(char *buffer)
+{
+    for (int i = 0; i < MAX_BUFFER; i++)
+        buffer[i] = '0';
+    
+    buffer[MAX_BUFFER] = '\0';
+}
+
 void inicializer(ServerInfo *server, NodeInfo *personal, NodeInfo *succ, NodeInfo *succ2, NodeInfo *pred)
 {
     //inicializar server
@@ -57,7 +65,7 @@ void inicializer(ServerInfo *server, NodeInfo *personal, NodeInfo *succ, NodeInf
 
 }
 
-void TCPServerInit(NodeInfo *server)
+void tcpServerInit(NodeInfo *server)
 {
     struct addrinfo hints, *res;
     int errcode;
@@ -90,14 +98,14 @@ void TCPServerInit(NodeInfo *server)
     freeaddrinfo(res);
 }
 
-void TCPClientInit(NodeInfo *client)
+void tcpClientInit(NodeInfo *tcpServer)
 {
     struct addrinfo hints, *res;
     int errcode;
     char aux_str[8];
 
     // Criação do socket
-    if ((client->fd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
+    if ((tcpServer->fd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
         exit(1); // error
 
     memset(&hints, 0, sizeof hints);
@@ -105,15 +113,112 @@ void TCPClientInit(NodeInfo *client)
     hints.ai_socktype = SOCK_STREAM; // TCP socket
 
     //conversão de int para string
-    sprintf(aux_str, "%d", client->TCP);
-    
-    if ((errcode = getaddrinfo(client->IP, aux_str, &hints, &res)) != 0)
-        exit(1);
+    sprintf(aux_str, "%d", tcpServer->TCP);
 
-    if (connect(client->fd, res->ai_addr, res->ai_addrlen) == -1)
-        exit(1);
+    if ((errcode = getaddrinfo(tcpServer->IP, aux_str, &hints, &res)) != 0)
+        exit(1); /* error */
+
+    if (connect(tcpServer->fd, res->ai_addr, res->ai_addrlen) == -1)
+        exit(1); /* error */
 
     freeaddrinfo(res);
+}
+
+void tcpSend(NodeInfo dest, char *buffer)
+{
+    ssize_t nbytes, nleft, nwritten;
+    char *ptr;
+
+    ptr = buffer;
+    nbytes = strlen(buffer);
+    nleft = nbytes;
+
+    while (nleft > 0)
+    {
+        nwritten = write(dest.fd, ptr, nleft);
+        if (nwritten <= 0) /*error*/
+            exit(1);
+        nleft -= nwritten;
+        ptr += nwritten;
+    }
+}
+
+void nodeServSend (ServerInfo server, char* buffer)
+{
+    char aux_str[8];
+    int fd, errcode;
+
+    struct sockaddr addr;
+    socklen_t addrlen;
+    ssize_t n;
+    struct addrinfo hints, *res;
+
+    addrlen = sizeof(addr);
+
+
+    // socket creation and verification
+    fd = socket(AF_INET, SOCK_DGRAM, 0); // UDP socket
+    if (fd == -1)                        /*error*/
+        exit(1);
+
+    memset(&hints, 0, sizeof hints);
+    hints.ai_family = AF_INET;      // IPv4
+    hints.ai_socktype = SOCK_DGRAM; // UDP socket
+
+    //conversão de int para string
+    sprintf(aux_str, "%d", server.regUDP);
+
+    //receber informação do servidor
+    errcode = getaddrinfo(server.regIP, aux_str, &hints, &res);
+    if (errcode != 0)
+    { /*error*/
+        printf("Error connecting");
+        exit(1);
+    }
+
+    n = sendto(fd, buffer, strlen(buffer), 0, res->ai_addr, res->ai_addrlen);
+    if (n == -1)
+    { /*error*/
+        printf("Error messaging.");
+        exit(1);
+    }
+    
+    bufferInit(buffer);
+
+    n = recvfrom(fd, buffer, strlen(buffer), 0, &addr, &addrlen);
+    if (n == -1) /*error*/
+        exit(1);
+
+    buffer[n] = '\0';
+
+    freeaddrinfo(res);
+    close(fd);
+}
+
+void messageTokenize(char *message, char **inputArray, int *inputCount, char delim)
+{
+    char *token, buffer[MAX_BUFFER];
+
+    strcpy(buffer, message);
+
+    token = strtok(buffer, &delim);
+
+    while (*inputCount < MAX_NODES)
+    {
+        if (token == NULL)
+            break;
+
+        inputArray[*inputCount] = (char *)malloc(strlen(token) + 1);
+        memoryCheck(inputArray[*inputCount]);
+
+        strcpy(inputArray[*inputCount], token);
+        strcat(inputArray[strlen(token)], "\0");
+
+        *inputCount+= 1;
+
+        token = strtok(NULL, &delim);
+    }
+    
 }
 
 void SETs_Init(fd_set *readfds, int *maxfd, int personal_fd, int succ_fd, int succ2_fd, int pred_fd)
@@ -259,21 +364,22 @@ void argsCheck(int argc, char *argv[], char *IP, int *TCP, char *regIP, int *reg
 
 void listeningChanelInterpret(int *newfd, NodeInfo *pred)
 {
-    char *ptr, buffer[128];
+    char *ptr, mensage[MAX_BUFFER];
     ssize_t n, nw;
 
-    for (int i = 0; i < 128; i++)
-        buffer[i] = '\0';
+    int inputCount = 0;
+    char *token, mensageCopy[MAX_BUFFER];
 
-    n = read(*newfd, buffer, sizeof(buffer));
+    bufferInit(mensage);
+
+    n = read(*newfd, mensage, sizeof(mensage));
     if (n == -1)
     {
         printf("error reading listennig chanel\n");
         return; // error
     }
         
-    ptr = &buffer[0];
-    
+    ptr = &mensage[0];
     while (n > 0)
     {
         if ((nw = write(*newfd, ptr, n)) <= 0)
@@ -283,13 +389,8 @@ void listeningChanelInterpret(int *newfd, NodeInfo *pred)
     }
     buffer[sizeof(buffer)] = '\0';
 
-    int inputCount = 0;
-    char *token, bufferCopy[128];
-
-    strcpy(bufferCopy, buffer);
 
     token = strtok(buffer, " ");
-
 
     char **inputArray = (char **)malloc(MAX_ARGUMENTS * sizeof(char *));
     memoryCheck(inputArray);
@@ -363,91 +464,5 @@ void listeningChanelInterpret(int *newfd, NodeInfo *pred)
         free(inputArray[i]);
     }
     free(inputArray);
-    
 }
 
-void bufferInit(char *buffer)
-{
-    for (int i = 0; i < MAX_BUFFER; i++)
-        buffer[i] = '0';
-    
-    buffer[MAX_BUFFER] = '\0';
-}
-
-void sendToServer (ServerInfo server, char* buffer)
-{
-    char aux_str[8];
-    int fd, errcode;
-
-    struct sockaddr addr;
-    socklen_t addrlen;
-    ssize_t n;
-    struct addrinfo hints, *res;
-
-    addrlen = sizeof(addr);
-
-
-    // socket creation and verification
-    fd = socket(AF_INET, SOCK_DGRAM, 0); // UDP socket
-    if (fd == -1)                        /*error*/
-        exit(1);
-
-    memset(&hints, 0, sizeof hints);
-    hints.ai_family = AF_INET;      // IPv4
-    hints.ai_socktype = SOCK_DGRAM; // UDP socket
-
-    //conversão de int para string
-    sprintf(aux_str, "%d", server.regUDP);
-
-    //receber informação do servidor
-    errcode = getaddrinfo(server.regIP, aux_str, &hints, &res);
-    if (errcode != 0)
-    { /*error*/
-        printf("Error connecting");
-        exit(1);
-    }
-
-    n = sendto(fd, buffer, strlen(buffer), 0, res->ai_addr, res->ai_addrlen);
-    if (n == -1)
-    { /*error*/
-        printf("Error messaging.");
-        exit(1);
-    }
-    
-    bufferInit(buffer);
-
-    n = recvfrom(fd, buffer, strlen(buffer), 0, &addr, &addrlen);
-    if (n == -1) /*error*/
-        exit(1);
-
-    buffer[n] = '\0';
-
-    freeaddrinfo(res);
-    close(fd);
-}
-
-void messageTokenize(char *message, char **inputArray, int *inputCount, char delim)
-{
-    char *token, buffer[MAX_BUFFER];
-
-    strcpy(buffer, message);
-
-    token = strtok(buffer, &delim);
-
-    while (*inputCount < MAX_NODES)
-    {
-        if (token == NULL)
-            break;
-
-        inputArray[*inputCount] = (char *)malloc(strlen(token) + 1);
-        memoryCheck(inputArray[*inputCount]);
-
-        strcpy(inputArray[*inputCount], token);
-        strcat(inputArray[strlen(token)], "\0");
-
-        *inputCount+= 1;
-
-        token = strtok(NULL, &delim);
-    }
-    
-}
