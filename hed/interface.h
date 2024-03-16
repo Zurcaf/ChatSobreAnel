@@ -16,5 +16,4 @@ void leave(int ring, NodeInfo personal, ServerInfo server);
 
 void showTopology(NodeInfo personal, NodeInfo succ, NodeInfo succ2, NodeInfo pred);
 
-
 #endif

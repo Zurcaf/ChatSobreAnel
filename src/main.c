@@ -15,7 +15,11 @@ int main(int argc, char *argv[])
     fd_set readfds;
     int maxfd;
     int newfd;
-    // int errcode;
+
+    // Variável para a mensagem recebida
+    int messageType;
+    char message[MAX_BUFFER];
+    char **messageArray = NULL;
 
     // variaveis com informação do servidor e do nó   
     int ring = -1;
@@ -24,6 +28,13 @@ int main(int argc, char *argv[])
     NodeInfo succ;
     NodeInfo succ2;
     NodeInfo pred;
+    
+    // ignorar o sinal SIGPIPE
+    struct sigaction act;
+
+    memset(&act,0,sizeof act);
+    act.sa_handler=SIG_IGN;
+    if(sigaction(SIGPIPE,&act,NULL)==-1)/*error*/exit(1);
 
     // Inicialização das estruturas
     inicializer(&server, &personal, &succ, &succ2, &pred);
@@ -36,7 +47,7 @@ int main(int argc, char *argv[])
     argsCheck(argc, argv, personal.IP, &personal.TCP, server.regIP, &server.regUDP);
 
     // Inicialização do servidorTCP de escuta do nó
-    TCPServerInit(&personal);
+    tcpServerInit(&personal);
 
     // printf("------------------------------------------------------------\n");
     // printf("Application COR invoked with the following parameters:\n");
@@ -56,7 +67,11 @@ int main(int argc, char *argv[])
 
         // Espera por atividade com o select
         if (select(maxfd + 1, &readfds, NULL, NULL, NULL) == -1)
-            exit(1); /* error */
+        {
+            perror("select");
+            exit(4);
+        }
+            
 
         if (FD_ISSET(STDIN_FILENO, &readfds))
         {
@@ -119,40 +134,114 @@ int main(int argc, char *argv[])
             printf("Insert command: \n");
         }
 
-        
+
 
         if (FD_ISSET(personal.fd, &readfds))
         {
             // Novas conexões no socket
             if ((newfd = accept(personal.fd, NULL, NULL)) == -1) 
                 exit(1); /* error */
-
             
+            tcpReceive(newfd, message);
+            messageArray = (char **)malloc(MAX_ARGUMENTS * sizeof(char *));
+            memoryCheck(messageArray);
 
-            command = listeningChanelInterpret(&newfd);
+            messageType = getMessageType(message, messageArray);
 
-            switch (command)
+            printf("Mensagem recebidaaaaa: %s, %d\n", message, messageType);
+            for (int i = 0; messageArray[i] != NULL; ++i)
+            {
+                printf("Argumento %d: -%s-\n", i, messageArray[i]);
+            }
+
+            switch (messageType)
             {
                 case 0:
                     printf("Error in the listening channel (comando não reconhecido)\n"); 
                     break;
                 //caso seja um ENTRY
                 case 1:
+                    if (succ.id == personal.id)
+                    {
+                        pred.fd = newfd;
+                        pred.id = atoi(messageArray[1]);
 
+                        succ.id= atoi(messageArray[1]);
+                        strcpy(succ.IP, messageArray[2]);
+                        succ.TCP = atoi(messageArray[3]);
+
+                        tcpClientInit(&succ);
+                        bufferInit(message);
+                        
+                        sprintf(message, "PRED %02d\n", personal.id);
+                        tcpSend(succ.fd, message);
+                    }
+                    else
+                    {
+                        
+                        tcpSend(pred.fd, message);
+                        printf ("Envio de mensagem para o ondPred: %s",message);
+
+                        pred.fd = newfd;
+                        pred.id = atoi(messageArray[1]);
+
+                        sprintf(message, "SUCC %02d %s %05d\n", succ.id, succ.IP, succ.TCP);
+                        tcpSend(pred.fd, message);
+                        printf ("Envio de mensagem para o predecessor: %s",message);
+                    }
                     break;
 
                 //caso seja um PRED
                 case 2:
+                    pred.fd = newfd;
+                    pred.id = atoi(messageArray[1]);
                     break;
 
                 //caso seja um CHORD
-                case 3:
+                case 4:
+                    break;
+                default:
                     break;
             }
-            command = 0;
-            printf("Pred: %d %d, %d\n", pred.id, pred.fd, newfd);
+            messageType = 0;
+
+            for (int i = 0; messageArray[i] != NULL; ++i)
+            {
+                free(messageArray[i]);
+            }
+            free(messageArray);
+        }
+
+        if (FD_ISSET(succ.fd, &readfds))
+        {
+            tcpReceive(succ.fd, message);
+
+            messageArray = (char **)malloc(MAX_ARGUMENTS * sizeof(char *));
+            memoryCheck(messageArray);
+
+            messageType = getMessageType(message, messageArray);
+
+            printf("Mensagem recebidaaaaa: %s, %d\n", message, messageType);
+            for (int i = 0; messageArray[i] != NULL; ++i)
+            {
+                printf("Argumento %d: -%s-\n", i, messageArray[i]);
+            }
         }
     }
+
+    if(succ.fd != -1)
+    {
+        close(succ.fd);
+    }
+    if(succ2.fd != -1)
+    {
+        close(succ2.fd);
+    }
+    if(pred.fd != -1)
+    {
+        close(pred.fd);
+    }
+
 
     close(personal.fd);
     return 0;

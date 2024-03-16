@@ -241,11 +241,12 @@ void directJoin(NodeInfo personal, NodeInfo Succ)
     //inicializar buffer
     bufferInit(message);
 
-    TCPClientInit(&Succ);
+    tcpClientInit(&Succ);
 
-    sprintf(message, "ENTRY %02d %s %05d", personal.id, personal.IP, personal.TCP);
+    sprintf(message, "ENTRY %02d %s %05d\n", personal.id, personal.IP, personal.TCP);
+    printf("Mensagem enviada: %s", message);
 
-    TCPClientSend(Succ, message);
+    tcpSend(Succ.fd, message);
 
     return;
 }
@@ -261,7 +262,7 @@ void join(NodeInfo *personal, NodeInfo *succ, NodeInfo *succ2, NodeInfo *pred, S
     bufferInit(message);
 
     sprintf(message, "NODES %03d", ring);
-    sendToServer(server, message);
+    nodeServSend(server, message);
 
     //alocar memoria para um vetor de linhas
     char **lines = (char **)malloc(MAX_NODES * sizeof(char *));
@@ -316,8 +317,6 @@ void join(NodeInfo *personal, NodeInfo *succ, NodeInfo *succ2, NodeInfo *pred, S
         succ->id = personal->id + 1;
         newSuccID(nodes, personal, succ);
 
-        printf("Call do DJ\nSucc ID: %02d\n", succ->id);
-
         //call direct join
         directJoin(*personal, *succ);
     }
@@ -333,7 +332,7 @@ void join(NodeInfo *personal, NodeInfo *succ, NodeInfo *succ2, NodeInfo *pred, S
     bufferInit(message);
     sprintf(message, "REG %03d %02d %s %05d", ring, personal->id, personal->IP, personal->TCP);
     
-    sendToServer(server, message);
+    nodeServSend(server, message);
     printf("%s\n", message);
 
     return;
@@ -402,10 +401,10 @@ void leave(int ring, NodeInfo personal, ServerInfo server)
 
 void showTopology(NodeInfo personal, NodeInfo succ, NodeInfo succ2, NodeInfo pred)
 {
-    printf("Me: \n ID: %02d\n, IP: %s\n, TCP: %d\n",  personal.id, personal.IP, personal.TCP);
-    printf("Pred: \n ID: %02d\n",  pred.id);
-    printf("Succ: \n ID: %02d\n, IP: %s\n, TCP: %d\n",  succ.id, succ.IP, succ.TCP);
-    printf("Succ2: \n ID: %02d\n, IP: %s\n, TCP: %d\n",  succ2.id, succ2.IP, succ2.TCP);
-    printf("completar com a informação da corda, se existir...");
+    printf("Me   -> ID:%02d IP:%s TCP:%05d\n",  personal.id, personal.IP, personal.TCP);
+    printf("Pred -> ID:%02d\n",  pred.id);
+    printf("Succ -> ID:%02d IP:%s TCP:%05d\n",  succ.id, succ.IP, succ.TCP);
+    printf("Succ2-> ID:%02d IP:%s TCP:%05d\n",  succ2.id, succ2.IP, succ2.TCP);
+    printf("Completar com a informação da corda, se existir...\n\n");
     return;
 }

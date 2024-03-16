@@ -69,7 +69,7 @@ void tcpServerInit(NodeInfo *server)
 {
     struct addrinfo hints, *res;
     int errcode;
-    char aux_str[8];
+    char aux_str[8];    
 
     // Criação do socket
     if ((server->fd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
@@ -124,7 +124,7 @@ void tcpClientInit(NodeInfo *tcpServer)
     freeaddrinfo(res);
 }
 
-void tcpSend(NodeInfo dest, char *buffer)
+void tcpSend(int fdDest, char *buffer)
 {
     ssize_t nbytes, nleft, nwritten;
     char *ptr;
@@ -135,12 +135,45 @@ void tcpSend(NodeInfo dest, char *buffer)
 
     while (nleft > 0)
     {
-        nwritten = write(dest.fd, ptr, nleft);
+        nwritten = write(fdDest, ptr, nleft);
         if (nwritten <= 0) /*error*/
             exit(1);
         nleft -= nwritten;
         ptr += nwritten;
     }
+}
+
+int tcpReceive (int fdRec, char *message)
+{
+    char *ptr;
+    ssize_t n, nw;
+
+    ptr = message;
+    while (1)
+    {
+        n = read(fdRec, ptr, 1);
+        if (n < 0) /*error*/
+            exit(1);
+        if (n == 0)
+        {
+            //fim de transmissão
+            return 0;
+        }
+        
+        if (*ptr == '\n')
+            break;
+        ptr += n;
+    }
+
+    ptr = &message[0];
+    while (n > 0)
+    {
+        if ((nw = write(fdRec, ptr, n)) <= 0)
+            exit(1);
+        n -= nw;
+        ptr += nw;
+    }
+    return 1;
 }
 
 void nodeServSend (ServerInfo server, char* buffer)
@@ -218,7 +251,17 @@ void messageTokenize(char *message, char **inputArray, int *inputCount, char del
 
         token = strtok(NULL, &delim);
     }
-    
+    inputArray[*inputCount] = NULL;
+
+    int lastTokenLength = strlen(inputArray[*inputCount - 1]);
+
+    for (int i=0; i<lastTokenLength; i++)
+    {
+        if (inputArray[*inputCount - 1][i] == '\n')
+        {
+            inputArray[*inputCount - 1][i] = '\0';
+        }
+    }
 }
 
 void SETs_Init(fd_set *readfds, int *maxfd, int personal_fd, int succ_fd, int succ2_fd, int pred_fd)
@@ -231,19 +274,19 @@ void SETs_Init(fd_set *readfds, int *maxfd, int personal_fd, int succ_fd, int su
         FD_SET(personal_fd, readfds);  // Adiciona o descritor do socket
         *maxfd = (personal_fd > *maxfd) ? personal_fd : *maxfd;
 
-        if (succ_fd != 0)
+        if (succ_fd != -1)
         {
             FD_SET(succ_fd, readfds);  // Adiciona o descritor do socket
             *maxfd = (succ_fd > *maxfd) ? succ_fd : *maxfd;
         }
 
-        if (succ2_fd != 0)
+        if (succ2_fd != -1)
         {
             FD_SET(succ2_fd, readfds);  // Adiciona o descritor do socket
             *maxfd = (succ2_fd >*maxfd) ? succ2_fd :*maxfd;
         }
 
-        if (pred_fd != 0)
+        if (pred_fd != -1)
         {
             FD_SET(pred_fd, readfds);  // Adiciona o descritor do socket
            *maxfd = (pred_fd >*maxfd) ? pred_fd :*maxfd;
@@ -362,107 +405,35 @@ void argsCheck(int argc, char *argv[], char *IP, int *TCP, char *regIP, int *reg
     }
 }
 
-void listeningChanelInterpret(int *newfd, NodeInfo *pred)
+int getMessageType(char* message, char** messageArray)
 {
-    char *ptr, mensage[MAX_BUFFER];
-    ssize_t n, nw;
-
     int inputCount = 0;
-    char *token, mensageCopy[MAX_BUFFER];
+    messageTokenize(message, messageArray, &inputCount, ' ');
 
-    bufferInit(mensage);
-
-    n = read(*newfd, mensage, sizeof(mensage));
-    if (n == -1)
+    if (strcmp(messageArray[0], "ENTRY") == 0)
     {
-        printf("error reading listennig chanel\n");
-        return; // error
+        return 1;
     }
-        
-    ptr = &mensage[0];
-    while (n > 0)
+    if (strcmp(messageArray[0], "PRED") == 0)
     {
-        if ((nw = write(*newfd, ptr, n)) <= 0)
-            exit(1);
-        n -= nw;
-        ptr += nw;
+        return 2;
     }
-    buffer[sizeof(buffer)] = '\0';
-
-
-    token = strtok(buffer, " ");
-
-    char **inputArray = (char **)malloc(MAX_ARGUMENTS * sizeof(char *));
-    memoryCheck(inputArray);
-
-    while (inputCount < MAX_ARGUMENTS)
+    if (strcmp(messageArray[0], "SUCC") == 0)
     {
-        if (token == NULL)
-            break;
-
-        inputArray[inputCount] = (char *)malloc(strlen(token) + 1);
-        memoryCheck(inputArray[inputCount]);
-
-        strcpy(inputArray[inputCount], token);
-        strcat(inputArray[inputCount], "\0");
-
-        token = strtok(NULL, " ");
-        inputCount+= 1;
+        return 3;
     }
-    
-    inputArray[inputCount - 1][strlen(inputArray[inputCount - 1]) - 1] = '\0'; // Remover o \n do último argumento
-    inputArray[inputCount] = NULL;                                  // Marcar o final da lista de argumentos
-
-
-    ssize_t nbytes, nleft, nwritten;
-    
-    switch (inputCount)
+    if (strcmp(messageArray[0], "CHORD") == 0)
     {
-    case 2:
-        if (strcmp(inputArray[0], "PRED") == 0)
-        {
-            pred->id = atoi(inputArray[1]);
-            pred->fd = *newfd;
-        }
-        break;
-    case 4:
-        if (strcmp(inputArray[0], "ENTRY") == 0)
-        {
-            pred->fd = *newfd;
-            if (pred->fd != -1)
-            {
-                //enviar para o predecessor
-                ptr = bufferCopy;
-                nbytes = strlen(bufferCopy);
-                nleft = nbytes;
-
-                while (nleft > 0)
-                {
-                    printf("nleft %ld\n", nleft);
-                    nwritten = write(pred->fd, ptr, nleft);
-                    if (nwritten <= 0) /*error*/
-                        exit(1);
-                    nleft -= nwritten;
-                    ptr += nwritten;
-                }
-                printf("copyyy %s", bufferCopy);
-                // close(pred->fd);
-            }
-            pred->fd = *newfd;
-            pred->id = atoi(inputArray[1]);
-            strcpy(pred->IP, inputArray[2]);
-            pred->TCP = atoi(inputArray[3]);
-            printf("Entry: %d %s %d\n", pred->id, pred->IP, pred->TCP);
-        }
-        break;
-    default:
-        break;
+        return 4;
     }
-    
-    for (int i = 0; i < inputCount; i++)
+    if (strcmp(messageArray[0], "ROUTE") == 0)
     {
-        free(inputArray[i]);
+        return 5;
     }
-    free(inputArray);
+    if (strcmp(messageArray[0], "CHAT") == 0)
+    {
+        return 6;
+    }
+    return 0;
 }
 

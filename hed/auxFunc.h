@@ -19,9 +19,9 @@ void tcpServerInit(NodeInfo *server);
 //inicio de uma conexão TCP (cliente)
 void tcpClientInit(NodeInfo *client);
 
-void tcpSend(NodeInfo dest, char *buffer);
+void tcpSend(int fdDest, char *buffer);
 
-void tcpReceive (int *newfd, NodeInfo *pred);
+int tcpReceive (int fdRec, char *message);
 
 //envio de mensagens para o servidor (UDP)
 void nodeServSend(ServerInfo server, char* buffer);
@@ -38,6 +38,6 @@ bool ValidIPAddress(const char *ipAddress);
 void argsCheck(int argc, char *argv[], char *IP, int *TCP, char *regIP, int *regUDP);
 
 //verificação do canal de escuta
-void listeningChanelInterpret(int *newfd, NodeInfo *pred);
+int getMessageType(char* message, char** messageArray);
 
 #endif
