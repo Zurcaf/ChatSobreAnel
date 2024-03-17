@@ -26,7 +26,7 @@ void bufferInit(char *buffer)
     buffer[MAX_BUFFER] = '\0';
 }
 
-void inicializer(ServerInfo *server, NodeInfo *personal, NodeInfo *succ, NodeInfo *succ2, NodeInfo *pred)
+void inicializer(udpServer *server, tcpServerInfo *personal, tcpServerInfo *succ, tcpServerInfo *succ2, tcpClientInfo *pred)
 {
     //inicializar server
     if (server != NULL)
@@ -59,13 +59,11 @@ void inicializer(ServerInfo *server, NodeInfo *personal, NodeInfo *succ, NodeInf
 
     //inicializar pred  
     pred->id = -1;
-    strcpy(pred->IP, INIT_IP);
-    pred->TCP = -1;
     pred->fd = -1;
 
 }
 
-void tcpServerInit(NodeInfo *server)
+void tcpServerInit(tcpServerInfo *server)
 {
     struct addrinfo hints, *res;
     int errcode;
@@ -98,7 +96,7 @@ void tcpServerInit(NodeInfo *server)
     freeaddrinfo(res);
 }
 
-void tcpClientInit(NodeInfo *tcpServer)
+void tcpClientInit(tcpServerInfo *tcpServer)
 {
     struct addrinfo hints, *res;
     int errcode;
@@ -167,7 +165,7 @@ int tcpReceive (int fdRec, char *message)
     return 1;
 }
 
-void nodeServSend (ServerInfo server, char* buffer)
+void nodeServSend (udpServer server, char* buffer)
 {
     char aux_str[8];
     int fd, errcode;
@@ -282,12 +280,6 @@ void SETs_Init(fd_set *readfds, int *maxfd, int personal_fd, int succ_fd, int su
             FD_SET(pred_fd, readfds);  // Adiciona o descritor do socket
            *maxfd = (pred_fd >*maxfd) ? pred_fd :*maxfd;
         }
-
-        printf("maxfd: %d\n", *maxfd);
-        printf("personal_fd: %d\n", personal_fd);
-        printf("succ_fd: %d\n", succ_fd);
-        printf("succ2_fd: %d\n", succ2_fd);
-        printf("pred_fd: %d\n", pred_fd);
 
 }
 

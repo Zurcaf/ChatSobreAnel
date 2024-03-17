@@ -4,16 +4,16 @@
 //verificação do input e separação dos argumentos
 int inputCheck(char* input, int *inputCount, char** inputArray);
 
-void newPersonalID(NodeInfo** nodes, NodeInfo *personal);
+void newPersonalID(tcpServerInfo** nodes, tcpServerInfo *personal);
 
-void newSuccID(NodeInfo** nodes, NodeInfo *personal, NodeInfo *succ);
+void newSuccID(tcpServerInfo** nodes, tcpServerInfo *personal, tcpServerInfo *succ);
 
-void directJoin(NodeInfo personal, NodeInfo *Succ);
+void directJoin(tcpServerInfo personal, tcpServerInfo *Succ);
 
-void join(NodeInfo *personal, NodeInfo *succ, NodeInfo *succ2, NodeInfo *pred, ServerInfo server, int ring);
+void join(tcpServerInfo *personal, tcpServerInfo *succ, tcpServerInfo *succ2, tcpClientInfo *pred, udpServer server, int ring);
 
-void leave(int ring, NodeInfo personal, ServerInfo server);
+void leave(int ring, tcpServerInfo personal, udpServer server);
 
-void showTopology(NodeInfo personal, NodeInfo succ, NodeInfo succ2, NodeInfo pred);
+void showTopology(tcpServerInfo personal, tcpServerInfo succ, tcpServerInfo succ2, tcpClientInfo pred);
 
 #endif

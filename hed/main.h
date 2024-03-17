@@ -28,22 +28,30 @@
 #define MAX_PUT 100
 #define WORD_LEN_MAX 70
 
-typedef struct _nodeInfo NodeInfo;
-typedef struct _nodeInfo
+typedef struct _tcpServerInfo tcpServerInfo;
+typedef struct _tcpServerInfo
 {
     int id;
     char IP[MAX_IP_LENGTH];
     int TCP;
     int fd;
-} NodeInfo;
+} tcpServerInfo;
 
-typedef struct _serverInfo ServerInfo;
-typedef struct _serverInfo
+typedef struct _nodeClinetInfo tcpClientInfo;
+typedef struct _nodeClinetInfo
+{
+    int id;
+    int fd;
+    tcpClientInfo *next;
+} tcpClientInfo;
+
+typedef struct _udpServer udpServer;
+typedef struct _udpServer
 {
     char regIP[MAX_IP_LENGTH];
     int regUDP;
     int fd;
-} ServerInfo;
+} udpServer;
 
 
 #endif

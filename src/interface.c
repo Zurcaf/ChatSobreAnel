@@ -173,7 +173,7 @@ int inputCheck(char* input, int *inputCount, char** inputArray)
     return 0;
 }
 
-void newPersonalID(NodeInfo** nodes, NodeInfo *personal)
+void newPersonalID(tcpServerInfo** nodes, tcpServerInfo *personal)
 {  
     if (nodes[personal->id]->id != -1)
     {
@@ -203,7 +203,7 @@ void newPersonalID(NodeInfo** nodes, NodeInfo *personal)
     return;
 }
 
-void newSuccID(NodeInfo** nodes, NodeInfo *personal, NodeInfo *succ)
+void newSuccID(tcpServerInfo** nodes, tcpServerInfo *personal, tcpServerInfo *succ)
 {
     //encontrar o sucessor
     if (nodes[succ->id]->id == -1)
@@ -234,7 +234,7 @@ void newSuccID(NodeInfo** nodes, NodeInfo *personal, NodeInfo *succ)
     succ->TCP = nodes[succ->id]->TCP;
 }
 
-void directJoin(NodeInfo personal, NodeInfo* Succ)
+void directJoin(tcpServerInfo personal, tcpServerInfo* Succ)
 {
     char message[MAX_BUFFER];
 
@@ -251,7 +251,7 @@ void directJoin(NodeInfo personal, NodeInfo* Succ)
 }
 
 //Implementação dos comandos da interface com o utlizador (4.2)
-void join(NodeInfo *personal, NodeInfo *succ, NodeInfo *succ2, NodeInfo *pred, ServerInfo server, int ring)
+void join(tcpServerInfo *personal, tcpServerInfo *succ, tcpServerInfo *succ2, tcpClientInfo *pred, udpServer server, int ring)
 {
     int lineCounter = 0;
     int infoCounter = 0;
@@ -272,12 +272,12 @@ void join(NodeInfo *personal, NodeInfo *succ, NodeInfo *succ2, NodeInfo *pred, S
     char **information = (char **)malloc(MAX_NODES * sizeof(char *));
     memoryCheck(information);
 
-    NodeInfo **nodes = (NodeInfo **)malloc(MAX_NODES * sizeof(NodeInfo*));
+    tcpServerInfo **nodes = (tcpServerInfo **)malloc(MAX_NODES * sizeof(tcpServerInfo*));
     memoryCheck(nodes);
 
     for (int i = 0; i < MAX_NODES; i++)
     {
-        nodes[i] = (NodeInfo *)malloc(sizeof(NodeInfo));
+        nodes[i] = (tcpServerInfo *)malloc(sizeof(tcpServerInfo));
         memoryCheck(nodes[i]);
 
         nodes[i]->id = -1;
@@ -337,7 +337,7 @@ void join(NodeInfo *personal, NodeInfo *succ, NodeInfo *succ2, NodeInfo *pred, S
     return;
 }
 
-void leave(int ring, NodeInfo personal, ServerInfo server)
+void leave(int ring, tcpServerInfo personal, udpServer server)
 {
     int fd, errcode;
     char aux_str[8];
@@ -398,12 +398,13 @@ void leave(int ring, NodeInfo personal, ServerInfo server)
     return;
 }
 
-void showTopology(NodeInfo personal, NodeInfo succ, NodeInfo succ2, NodeInfo pred)
+void showTopology(tcpServerInfo personal, tcpServerInfo succ, tcpServerInfo succ2, tcpClientInfo pred)
 {
-    printf("Me   -> ID:%02d IP:%s TCP:%05d\n",  personal.id, personal.IP, personal.TCP);
-    printf("Pred -> ID:%02d\n",  pred.id);
-    printf("Succ -> ID:%02d IP:%s TCP:%05d\n",  succ.id, succ.IP, succ.TCP);
-    printf("Succ2-> ID:%02d IP:%s TCP:%05d\n",  succ2.id, succ2.IP, succ2.TCP);
-    printf("Completar com a informação da corda, se existir...\n\n");
+    printf("Pred     ID%02d\n",  pred.id);
+    printf("Personal ID:%02d IP:%s TCP:%05d\n",  personal.id, personal.IP, personal.TCP);
+    printf("Succ     ID:%02d IP:%s TCP:%05d\n",  succ.id, succ.IP, succ.TCP);
+    printf("Succ2    ID:%02d IP:%s TCP:%05d\n",  succ2.id, succ2.IP, succ2.TCP);
+
+    printf("\n");
     return;
 }

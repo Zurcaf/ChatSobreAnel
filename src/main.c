@@ -23,11 +23,11 @@ int main(int argc, char *argv[])
 
     // variaveis com informação do servidor e do nó   
     int ring = -1;
-    ServerInfo server;
-    NodeInfo personal;
-    NodeInfo succ;
-    NodeInfo succ2;
-    NodeInfo pred;
+    udpServer server;
+    tcpServerInfo personal;
+    tcpServerInfo succ;
+    tcpServerInfo succ2;
+    tcpClientInfo pred;
     
     // ignorar o sinal SIGPIPE
     struct sigaction act;
@@ -35,7 +35,7 @@ int main(int argc, char *argv[])
     memset(&act,0,sizeof act);
     act.sa_handler=SIG_IGN;
     if(sigaction(SIGPIPE,&act,NULL)==-1)/*error*/exit(1);
-
+    
     // Inicialização das estruturas
     inicializer(&server, &personal, &succ, &succ2, &pred);
 
@@ -64,7 +64,6 @@ int main(int argc, char *argv[])
     {
         // Inicialização dos descritores para o select
         SETs_Init(&readfds, &maxfd, personal.fd, succ.fd, succ2.fd, pred.fd);
-        printf("maxfd: %d\n", maxfd);
 
         // Espera por atividade com o select
         printf ("Espera por atividade\n");
@@ -164,14 +163,11 @@ int main(int argc, char *argv[])
                     {
                         pred.fd = newfd;
                         pred.id = atoi(messageArray[1]);
-                        printf("registo de um PRED: id:%d, fd:%d\n", pred.id, pred.fd);
 
                         succ.id= atoi(messageArray[1]);
                         strcpy(succ.IP, messageArray[2]);
                         succ.TCP = atoi(messageArray[3]);
 
-                        printf("registo de um PRED: id:%d, fd:%d\n", pred.id, pred.fd);
-                        printf("registo de um SUCC: id:%d, IP:%s, TCP:%d\n", succ.id, succ.IP, succ.TCP);
                         tcpClientInit(&succ);
                         bufferInit(message);
                         
@@ -180,7 +176,6 @@ int main(int argc, char *argv[])
                     }
                     else
                     {
-                        
                         tcpSend(pred.fd, message);
                         printf ("Envio de mensagem para o oldPred: %s",message);
 
@@ -191,6 +186,9 @@ int main(int argc, char *argv[])
                         tcpSend(pred.fd, message);
                         printf ("Envio de mensagem para o predecessor: %s",message);
                     }
+
+                    printf("registo de um PRED: id:%d, fd:%d\n", pred.id, pred.fd);
+                    printf("registo de um SUCC: id:%d, IP:%s, TCP:%d\n", succ.id, succ.IP, succ.TCP);
                     break;
 
                 //caso seja um PRED
@@ -221,14 +219,116 @@ int main(int argc, char *argv[])
 
             aux = tcpReceive(succ.fd, message);
 
-            printf("Mensagem recebida: %s, %d\n", message, aux);
+            if (aux == 0)
+            {
+                printf("Canal de sucessor fechado\n");
+                close(succ.fd);
+                succ.fd = -1;
+            }
+            else
+            {
+                messageArray = (char **)malloc(MAX_ARGUMENTS * sizeof(char *));
+                memoryCheck(messageArray);
 
-            messageArray = (char **)malloc(MAX_ARGUMENTS * sizeof(char *));
-            memoryCheck(messageArray);
+                messageType = getMessageType(message, messageArray);
 
-            messageType = getMessageType(message, messageArray);
+                printf ("Canal Sucessor: %s, %d\n", message, messageType);
 
-            printf ("Canal Sucessor: %s, %d\n", message, messageType);
+                switch (messageType)
+                {
+                    case 0:
+                        printf("Error in the successor channel (mensagem não reconhecida)\n"); 
+                        break;
+                    //Recebemos um ENTRY
+                    case 1:
+
+                        //Antigo sucessor passa a ser o segundo sucessor
+                        succ2.id = succ.id;
+                        strcpy(succ2.IP, succ.IP);
+                        succ2.TCP = succ.TCP;
+                        close(succ.fd);
+                        succ.fd = -1;
+
+                        //Mensagem recebida dá nos a info do novo sucessor
+                        succ.id = atoi(messageArray[1]);
+                        strcpy(succ.IP, messageArray[2]);
+                        succ.TCP = atoi(messageArray[3]);
+                        tcpClientInit(&succ);
+
+                        //Envio de um SUCC para o predecessor
+                        bufferInit(message);
+                        sprintf(message, "SUCC %02d %s %05d\n", succ.id, succ.IP, succ.TCP);
+                        tcpSend(pred.fd, message);
+                        printf ("Envio de mensagem para o predecessor: %s",message);
+
+                        //Envio de um PRED para o novo sucessor
+                        bufferInit(message);
+                        sprintf(message, "PRED %02d\n", personal.id);
+                        tcpSend(succ.fd, message);
+                        printf ("Envio de mensagem para o sucessor: %s",message);
+                        break;
+                    
+                    //Recebemos um PRED
+                    case 3:
+                        succ2.id = atoi(messageArray[1]);
+                        strcpy(succ2.IP, messageArray[2]);
+                        succ2.TCP = atoi(messageArray[3]);
+                        
+                        printf("registo de um SUCC2: id:%d, IP:%s, TCP:%d\n", succ2.id, succ2.IP, succ2.TCP);
+                        break;
+                    case 4:
+
+                        break;
+                    default:
+                        break;
+                }
+
+                for(int i = 0; messageArray[i] != NULL; i++)
+                {
+                    printf("messageArray[%d]: %s\n", i, messageArray[i]);
+                }
+                free(messageArray);
+                messageType = 0;
+            }
+        }
+
+        if (FD_ISSET(pred.fd, &readfds))
+        {
+            printf("PRED is set\n");
+
+            aux = tcpReceive(pred.fd, message);
+            if (aux == 0)
+            {
+                printf("Canal do predecessor fechado\n");
+                close(pred.fd);
+                pred.fd = -1;
+            }
+            else
+            {
+                messageArray = (char **)malloc(MAX_ARGUMENTS * sizeof(char *));
+                memoryCheck(messageArray);
+
+                messageType = getMessageType(message, messageArray);
+
+                printf ("Canal Pred: %s, %d\n", message, messageType);
+
+                switch (messageType)
+                {
+                    case 0:
+                        printf("Error in the predecessor channel (mensagem não reconhecida)\n"); 
+                        break;
+                    default:
+                        break;
+                }
+
+                for(int i = 0; messageArray[i] != NULL; i++)
+                {
+                    printf("messageArray[%d]: %s\n", i, messageArray[i]);
+                }
+                free(messageArray);
+                messageType = 0;
+
+            }
         }
     }
 

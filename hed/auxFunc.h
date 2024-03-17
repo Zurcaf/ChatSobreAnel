@@ -11,20 +11,20 @@ void fileCheck(FILE *filePointer, char *fileName);
 void bufferInit(char *buffer);
 
 //inicialização dos valores das estruturas
-void inicializer(ServerInfo *server, NodeInfo *personal, NodeInfo *succ, NodeInfo *succ2, NodeInfo *pred);
+void inicializer(udpServer *server, tcpServerInfo *personal, tcpServerInfo *succ, tcpServerInfo *succ2, tcpClientInfo *pred);
 
 //inicio de uma conexão TCP (servidor)
-void tcpServerInit(NodeInfo *server);
+void tcpServerInit(tcpServerInfo *server);
 
 //inicio de uma conexão TCP (cliente)
-void tcpClientInit(NodeInfo *client);
+void tcpClientInit(tcpServerInfo *client);
 
 void tcpSend(int fdDest, char *buffer);
 
 int tcpReceive (int fdRec, char *message);
 
 //envio de mensagens para o servidor (UDP)
-void nodeServSend(ServerInfo server, char* buffer);
+void nodeServSend(udpServer server, char* buffer);
 
 void messageTokenize(char *message, char **inputArray, int *inputCount, char delim);
 
