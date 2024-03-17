@@ -8,7 +8,7 @@ void newPersonalID(NodeInfo** nodes, NodeInfo *personal);
 
 void newSuccID(NodeInfo** nodes, NodeInfo *personal, NodeInfo *succ);
 
-void directJoin(NodeInfo personal, NodeInfo Succ);
+void directJoin(NodeInfo personal, NodeInfo *Succ);
 
 void join(NodeInfo *personal, NodeInfo *succ, NodeInfo *succ2, NodeInfo *pred, ServerInfo server, int ring);
 

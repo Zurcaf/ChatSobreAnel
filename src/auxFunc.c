@@ -146,7 +146,7 @@ void tcpSend(int fdDest, char *buffer)
 int tcpReceive (int fdRec, char *message)
 {
     char *ptr;
-    ssize_t n, nw;
+    ssize_t n;
 
     ptr = message;
     while (1)
@@ -163,15 +163,6 @@ int tcpReceive (int fdRec, char *message)
         if (*ptr == '\n')
             break;
         ptr += n;
-    }
-
-    ptr = &message[0];
-    while (n > 0)
-    {
-        if ((nw = write(fdRec, ptr, n)) <= 0)
-            exit(1);
-        n -= nw;
-        ptr += nw;
     }
     return 1;
 }
@@ -291,6 +282,13 @@ void SETs_Init(fd_set *readfds, int *maxfd, int personal_fd, int succ_fd, int su
             FD_SET(pred_fd, readfds);  // Adiciona o descritor do socket
            *maxfd = (pred_fd >*maxfd) ? pred_fd :*maxfd;
         }
+
+        printf("maxfd: %d\n", *maxfd);
+        printf("personal_fd: %d\n", personal_fd);
+        printf("succ_fd: %d\n", succ_fd);
+        printf("succ2_fd: %d\n", succ2_fd);
+        printf("pred_fd: %d\n", pred_fd);
+
 }
 
 bool ValidIPAddress(const char *ipAddress)

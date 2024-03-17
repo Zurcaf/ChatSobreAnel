@@ -17,7 +17,7 @@ int main(int argc, char *argv[])
     int newfd;
 
     // Variável para a mensagem recebida
-    int messageType;
+    int messageType, aux;
     char message[MAX_BUFFER];
     char **messageArray = NULL;
 
@@ -64,17 +64,20 @@ int main(int argc, char *argv[])
     {
         // Inicialização dos descritores para o select
         SETs_Init(&readfds, &maxfd, personal.fd, succ.fd, succ2.fd, pred.fd);
+        printf("maxfd: %d\n", maxfd);
 
         // Espera por atividade com o select
+        printf ("Espera por atividade\n");
         if (select(maxfd + 1, &readfds, NULL, NULL, NULL) == -1)
         {
             perror("select");
             exit(4);
         }
-            
+        
 
         if (FD_ISSET(STDIN_FILENO, &readfds))
         {
+            printf("stdin is set\n");
             fgets(input, sizeof(input), stdin);
 
             command = inputCheck(input, &argumentCount, arguments);
@@ -93,7 +96,7 @@ int main(int argc, char *argv[])
                     succ.id = atoi(arguments[2]);
                     strcpy(succ.IP, arguments[3]);
                     succ.TCP = atoi(arguments[4]);
-                    directJoin(personal, succ);
+                    directJoin(personal, &succ);
                     break;
                 case 3:
                     //chord();
@@ -134,10 +137,10 @@ int main(int argc, char *argv[])
             printf("Insert command: \n");
         }
 
-
-
         if (FD_ISSET(personal.fd, &readfds))
         {
+            printf("canla de escuta is set\n");
+
             // Novas conexões no socket
             if ((newfd = accept(personal.fd, NULL, NULL)) == -1) 
                 exit(1); /* error */
@@ -149,10 +152,6 @@ int main(int argc, char *argv[])
             messageType = getMessageType(message, messageArray);
 
             printf("Canal Escuta: %s, %d\n", message, messageType);
-            for (int i = 0; messageArray[i] != NULL; ++i)
-            {
-                printf("Argumento %d: -%s-\n", i, messageArray[i]);
-            }
 
             switch (messageType)
             {
@@ -165,11 +164,14 @@ int main(int argc, char *argv[])
                     {
                         pred.fd = newfd;
                         pred.id = atoi(messageArray[1]);
+                        printf("registo de um PRED: id:%d, fd:%d\n", pred.id, pred.fd);
 
                         succ.id= atoi(messageArray[1]);
                         strcpy(succ.IP, messageArray[2]);
                         succ.TCP = atoi(messageArray[3]);
 
+                        printf("registo de um PRED: id:%d, fd:%d\n", pred.id, pred.fd);
+                        printf("registo de um SUCC: id:%d, IP:%s, TCP:%d\n", succ.id, succ.IP, succ.TCP);
                         tcpClientInit(&succ);
                         bufferInit(message);
                         
@@ -195,6 +197,7 @@ int main(int argc, char *argv[])
                 case 2:
                     pred.fd = newfd;
                     pred.id = atoi(messageArray[1]);
+                    printf("registo de um PRED: %d\n", pred.id);
                     break;
 
                 //caso seja um CHORD
@@ -214,13 +217,18 @@ int main(int argc, char *argv[])
 
         if (FD_ISSET(succ.fd, &readfds))
         {
-            tcpReceive(succ.fd, message);
+            printf("SUCC is set\n");
+
+            aux = tcpReceive(succ.fd, message);
+
+            printf("Mensagem recebida: %s, %d\n", message, aux);
 
             messageArray = (char **)malloc(MAX_ARGUMENTS * sizeof(char *));
             memoryCheck(messageArray);
 
             messageType = getMessageType(message, messageArray);
 
+            printf ("Canal Sucessor: %s, %d\n", message, messageType);
         }
     }
 
