@@ -148,7 +148,7 @@ int main(int argc, char *argv[])
 
             messageType = getMessageType(message, messageArray);
 
-            printf("Mensagem recebidaaaaa: %s, %d\n", message, messageType);
+            printf("Canal Escuta: %s, %d\n", message, messageType);
             for (int i = 0; messageArray[i] != NULL; ++i)
             {
                 printf("Argumento %d: -%s-\n", i, messageArray[i]);
@@ -180,7 +180,7 @@ int main(int argc, char *argv[])
                     {
                         
                         tcpSend(pred.fd, message);
-                        printf ("Envio de mensagem para o ondPred: %s",message);
+                        printf ("Envio de mensagem para o oldPred: %s",message);
 
                         pred.fd = newfd;
                         pred.id = atoi(messageArray[1]);
@@ -221,11 +221,6 @@ int main(int argc, char *argv[])
 
             messageType = getMessageType(message, messageArray);
 
-            printf("Mensagem recebidaaaaa: %s, %d\n", message, messageType);
-            for (int i = 0; messageArray[i] != NULL; ++i)
-            {
-                printf("Argumento %d: -%s-\n", i, messageArray[i]);
-            }
         }
     }
 

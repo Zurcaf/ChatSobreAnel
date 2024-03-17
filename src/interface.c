@@ -244,7 +244,6 @@ void directJoin(NodeInfo personal, NodeInfo Succ)
     tcpClientInit(&Succ);
 
     sprintf(message, "ENTRY %02d %s %05d\n", personal.id, personal.IP, personal.TCP);
-    printf("Mensagem enviada: %s", message);
 
     tcpSend(Succ.fd, message);
 

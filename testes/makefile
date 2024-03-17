@@ -41,8 +41,18 @@ OBJS = $(patsubst $(SRC)/%.c, $(OBJ)/%.o, $(SRCS))
 11: $(SRC)/11TCPClient.c
 	gcc $(CFLAGS) $(SRC)/11TCPClient.c -o $(BINDIR)/11TCPClient
 
-12: $(SRC)/12UDPClient.c
-	gcc $(CFLAGS) $(SRC)/12UDPClient.c -o $(BINDIR)/12UDPClient
+12_0: $(SRC)/12_0UDPClient.c
+	gcc $(CFLAGS) $(SRC)/12_0UDPClient.c -o $(BINDIR)/12_0UDPClient
+
+12_1: $(SRC)/12_1UDPClient.c
+	gcc $(CFLAGS) $(SRC)/12_1UDPClient.c -o $(BINDIR)/12_1UDPClient
+
+12_2: $(SRC)/12_2UDPClient.c
+	gcc $(CFLAGS) $(SRC)/12_2UDPClient.c -o $(BINDIR)/12_2UDPClient
+
+12_3: $(SRC)/12_3UDPClient.c
+	gcc $(CFLAGS) $(SRC)/12_3UDPClient.c -o $(BINDIR)/12_3UDPClient
+
 
 13: $(SRC)/13toke.c
 	gcc $(CFLAGS) $(SRC)/13toke.c -o $(BINDIR)/13toke
@@ -78,8 +88,17 @@ OBJS = $(patsubst $(SRC)/%.c, $(OBJ)/%.o, $(SRCS))
 11t: 11
 	./$(BINDIR)/11TCPClient
 
-12t: 12
-	./$(BINDIR)/12UDPClient
+12_0t: 12_0
+	./$(BINDIR)/12_0UDPClient
+
+12_1t: 12_1
+	./$(BINDIR)/12_1UDPClient
+
+12_2t: 12_2
+	./$(BINDIR)/12_2UDPClient
+
+12_3t: 12_3
+	./$(BINDIR)/12_3UDPClient
 
 13t: 13
 	./$(BINDIR)/13toke
