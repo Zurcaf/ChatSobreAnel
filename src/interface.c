@@ -337,64 +337,27 @@ void join(tcpServerInfo *personal, tcpServerInfo *succ, tcpServerInfo *succ2, tc
     return;
 }
 
-void leave(int ring, tcpServerInfo personal, udpServer server)
+void leave(int ring, tcpServerInfo personal, tcpServerInfo succ, tcpServerInfo succ2, tcpClientInfo pred, udpServer server)
 {
-    int fd, errcode;
-    char aux_str[8];
-    char buffer[200];
+    char message[MAX_BUFFER];
 
     //inicializar buffer
-    for(int i = 0; i < 200; i++)
+    bufferInit(message);
+
+    sprintf(message, "UNREG %03d %02d", ring, personal.id);
+    nodeServSend(server, message);
+
+    printf("%s", message);
+
+    //Anel Unitário (só sair)
+    if (succ.id != personal.id)
     {
-        buffer[i] = '0';
+        return;
     }
 
-    struct sockaddr addr;
-    socklen_t addrlen;
-    ssize_t n;
-    struct addrinfo hints, *res;
+    close(succ.fd);
+    close(pred.fd);
 
-    // socket creation and verification
-    fd = socket(AF_INET, SOCK_DGRAM, 0); // UDP socket
-    if (fd == -1)                        /*error*/
-        exit(1);
-
-    memset(&hints, 0, sizeof hints);
-    hints.ai_family = AF_INET;      // IPv4
-    hints.ai_socktype = SOCK_DGRAM; // UDP socket
-
-    sprintf(aux_str, "%d", server.regUDP);
-
-    errcode = getaddrinfo(server.regIP , aux_str, &hints, &res);
-    if (errcode != 0)
-    { /*error*/
-        printf("Error connecting");
-        exit(1);
-    }
-
-    sprintf(buffer, "UNREG %03d %02d", ring, personal.id);
-    n = sendto(fd, buffer, strlen(buffer), 0, res->ai_addr, res->ai_addrlen);
-    if (n == -1)
-    { /*error*/
-        printf("Error messaging.");
-        exit(1);
-    }
-
-    for(int i = 0; i < 200; i++)
-        buffer[i] = '0';
-
-    freeaddrinfo(res);
-
-    addrlen = sizeof(addr);
-    n = recvfrom(fd, buffer, 200, 0, &addr, &addrlen);
-    if (n == -1) /*error*/
-        exit(1);
-
-    buffer[n] = '\0';
-
-    printf("%s\n", buffer);
-
-    close(fd);
     return;
 }
 

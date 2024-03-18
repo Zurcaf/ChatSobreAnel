@@ -223,7 +223,32 @@ int main(int argc, char *argv[])
             {
                 printf("Canal de sucessor fechado\n");
                 close(succ.fd);
-                succ.fd = -1;
+
+                if (succ2.id == personal.id)
+                {
+                    //ficamos no anel sozinhos
+                    close(pred.fd);
+                    succ.fd = personal.fd;
+                    pred.fd = personal.fd;
+                }
+                else
+                {
+                    //garantir que o anel não se separa
+                    succ.id = succ2.id;
+                    strcpy(succ.IP, succ2.IP);
+                    succ.TCP = succ2.TCP;
+
+                    tcpClientInit(&succ);
+
+                    bufferInit(message);
+                    sprintf(message, "PRED %02d \n", personal.id);
+                    tcpSend(succ.fd, message);
+
+                    bufferInit(message);
+                    sprintf(message, "SUCC %02d %s %05d\n", succ.id, succ.IP, succ.TCP);
+                    tcpSend(pred.fd, message);
+                }
+
             }
             else
             {
