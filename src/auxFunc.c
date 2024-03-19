@@ -194,7 +194,7 @@ void nodeServSend (udpServer server, char* buffer)
     errcode = getaddrinfo(server.regIP, aux_str, &hints, &res);
     if (errcode != 0)
     { /*error*/
-        printf("Error connecting");
+        printf("Error connectingsws");
         exit(1);
     }
 

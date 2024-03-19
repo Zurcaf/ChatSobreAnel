@@ -345,6 +345,7 @@ void leave(int ring, tcpServerInfo personal, tcpServerInfo succ, tcpServerInfo s
     bufferInit(message);
 
     sprintf(message, "UNREG %03d %02d", ring, personal.id);
+   
     nodeServSend(server, message);
 
     printf("%s", message);

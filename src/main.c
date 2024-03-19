@@ -73,7 +73,6 @@ int main(int argc, char *argv[])
             perror("select");
             exit(4);
         }
-        
 
         if (FD_ISSET(STDIN_FILENO, &readfds))
         {
@@ -132,7 +131,13 @@ int main(int argc, char *argv[])
                     //message();
                     break;
                 case 10:
-                    leave(ring, personal, server);
+                    if (oldNode == false)
+                    {
+                        printf("You are not in a ring\n");
+                        break;
+                    }
+                    leave(ring, personal, succ, succ2, pred, server);
+                    oldNode = false;
                     break;
                 case 11:
                     exit(0);

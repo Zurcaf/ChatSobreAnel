@@ -12,7 +12,7 @@ void directJoin(tcpServerInfo personal, tcpServerInfo *Succ);
 
 void join(tcpServerInfo *personal, tcpServerInfo *succ, tcpServerInfo *succ2, tcpClientInfo *pred, udpServer server, int ring);
 
-void leave(int ring, tcpServerInfo personal, udpServer server);
+void leave(int ring, tcpServerInfo personal, tcpServerInfo succ, tcpServerInfo succ2, tcpClientInfo pred, udpServer server);
 
 void showTopology(tcpServerInfo personal, tcpServerInfo succ, tcpServerInfo succ2, tcpClientInfo pred);
 
