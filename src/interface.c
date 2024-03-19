@@ -174,10 +174,12 @@ int inputCheck(char* input, int *inputCount, char** inputArray)
 }
 
 void newPersonalID(tcpServerInfo** nodes, tcpServerInfo *personal)
-{  
+{
+
+    printf("ID: %02d\n", personal->id);
     if (nodes[personal->id]->id != -1)
     {
-        for (int i = personal->id; i < MAX_NODES; i++)
+        for (int i = personal->id; i < MAX_IDS; i++)
         {
             if (nodes[i]->id == -1)
             {
@@ -208,7 +210,7 @@ void newSuccID(tcpServerInfo** nodes, tcpServerInfo *personal, tcpServerInfo *su
     //encontrar o sucessor
     if (nodes[succ->id]->id == -1)
     {
-        for (int i = succ->id; i < MAX_NODES; i++)
+        for (int i = succ->id; i < MAX_IDS; i++)
         {
             if (nodes[i]->id != -1)
             {
@@ -264,18 +266,18 @@ void join(tcpServerInfo *personal, tcpServerInfo *succ, tcpServerInfo *succ2, tc
     nodeServSend(server, message);
 
     //alocar memoria para um vetor de linhas
-    char **lines = (char **)malloc(MAX_NODES * sizeof(char *));
+    char **lines = (char **)malloc(MAX_IDS * sizeof(char *));
     memoryCheck(lines);
 
     messageTokenize (message, lines, &lineCounter, '\n');
 
-    char **information = (char **)malloc(MAX_NODES * sizeof(char *));
+    char **information = (char **)malloc(MAX_IDS * sizeof(char *));
     memoryCheck(information);
 
-    tcpServerInfo **nodes = (tcpServerInfo **)malloc(MAX_NODES * sizeof(tcpServerInfo*));
+    tcpServerInfo **nodes = (tcpServerInfo **)malloc(MAX_IDS * sizeof(tcpServerInfo*));
     memoryCheck(nodes);
 
-    for (int i = 0; i < MAX_NODES; i++)
+    for (int i = 0; i < MAX_IDS; i++)
     {
         nodes[i] = (tcpServerInfo *)malloc(sizeof(tcpServerInfo));
         memoryCheck(nodes[i]);
@@ -320,7 +322,7 @@ void join(tcpServerInfo *personal, tcpServerInfo *succ, tcpServerInfo *succ2, tc
         directJoin(*personal, succ);
     }
     
-    for (int i = 0; i < MAX_NODES; i++)
+    for (int i = 0; i < MAX_IDS; i++)
     {
         free(nodes[i]);
     }
