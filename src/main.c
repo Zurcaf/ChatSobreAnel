@@ -23,6 +23,7 @@ int main(int argc, char *argv[])
 
     // variaveis com informação do servidor e do nó   
     int ring = -1;
+    bool oldNode = false;
     udpServer server;
     tcpServerInfo personal;
     tcpServerInfo succ;
@@ -86,16 +87,28 @@ int main(int argc, char *argv[])
                 case 0:
                     break;
                 case 1:
+                    if (oldNode == true)
+                    {
+                        printf("You are already in a ring\n");
+                        break;
+                    }
                     ring = atoi(arguments[1]);
                     personal.id = atoi(arguments[2]);
                     join(&personal, &succ, &succ2, &pred, server, ring);
+                    oldNode = true;
                     break;
                 case 2:
+                    if (oldNode == true)
+                    {
+                        printf("You are already in a ring\n");
+                        break;
+                    }
                     personal.id = atoi(arguments[1]);
                     succ.id = atoi(arguments[2]);
                     strcpy(succ.IP, arguments[3]);
                     succ.TCP = atoi(arguments[4]);
                     directJoin(personal, &succ);
+                    oldNode = true;
                     break;
                 case 3:
                     //chord();
@@ -196,6 +209,14 @@ int main(int argc, char *argv[])
                     pred.fd = newfd;
                     pred.id = atoi(messageArray[1]);
                     printf("registo de um PRED: %d\n", pred.id);
+                    if (oldNode == true)
+                    {
+                        bufferInit(message);
+                        sprintf(message, "SUCC %02d %s %05d\n", succ.id, succ.IP, succ.TCP);
+                        tcpSend(pred.fd, message);
+                        printf ("Envio de mensagem para o predecessor: %s",message);
+                    }
+                    oldNode = false;
                     break;
 
                 //caso seja um CHORD
@@ -327,6 +348,7 @@ int main(int argc, char *argv[])
                 printf("Canal do predecessor fechado\n");
                 close(pred.fd);
                 pred.fd = -1;
+
             }
             else
             {

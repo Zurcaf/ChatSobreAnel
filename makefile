@@ -64,7 +64,6 @@ debug:
 	gdb -ex run --args $(BINDIR)/COR 127.0.0.1 58002
 
 
-
 valgrind:
 	valgrind --leak-check=full $(BINDIR)/COR 127.0.0.1 58002
 
