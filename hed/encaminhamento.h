@@ -1,0 +1,8 @@
+#ifndef ENCAMINHAMETO_H
+#define ENCAMINHAMENTO_H
+
+
+
+
+
+#endif // ENCAMINHAMENTO_H

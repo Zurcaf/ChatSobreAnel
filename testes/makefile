@@ -53,6 +53,9 @@ OBJS = $(patsubst $(SRC)/%.c, $(OBJ)/%.o, $(SRCS))
 12_3: $(SRC)/12_3UDPClient.c
 	gcc $(CFLAGS) $(SRC)/12_3UDPClient.c -o $(BINDIR)/12_3UDPClient
 
+12_4: $(SRC)/12_4UDPClient.c
+	gcc $(CFLAGS) $(SRC)/12_4UDPClient.c -o $(BINDIR)/12_4UDPClient
+
 
 13: $(SRC)/13toke.c
 	gcc $(CFLAGS) $(SRC)/13toke.c -o $(BINDIR)/13toke
@@ -99,6 +102,9 @@ OBJS = $(patsubst $(SRC)/%.c, $(OBJ)/%.o, $(SRCS))
 
 12_3t: 12_3
 	./$(BINDIR)/12_3UDPClient
+
+12_4t: 12_4
+	./$(BINDIR)/12_4UDPClient
 
 13t: 13
 	./$(BINDIR)/13toke

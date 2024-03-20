@@ -176,7 +176,6 @@ int inputCheck(char* input, int *inputCount, char** inputArray)
 void newPersonalID(tcpServerInfo** nodes, tcpServerInfo *personal)
 {
 
-    printf("ID: %02d\n", personal->id);
     if (nodes[personal->id]->id != -1)
     {
         for (int i = personal->id; i < MAX_IDS; i++)
@@ -339,38 +338,56 @@ void join(tcpServerInfo *personal, tcpServerInfo *succ, tcpServerInfo *succ2, tc
     return;
 }
 
-void leave(int ring, tcpServerInfo personal, tcpServerInfo succ, tcpServerInfo succ2, tcpClientInfo pred, udpServer server)
+void leave(int ring, tcpServerInfo *personal, tcpServerInfo *succ, tcpServerInfo *succ2, tcpClientInfo *pred, udpServer server)
 {
     char message[MAX_BUFFER];
 
     //inicializar buffer
     bufferInit(message);
 
-    sprintf(message, "UNREG %03d %02d", ring, personal.id);
-   
+    sprintf(message, "UNREG %03d %02d", ring, personal->id);
     nodeServSend(server, message);
 
-    printf("%s", message);
+    printf("%s\n", message);
 
     //Anel Unitário (só sair)
-    if (succ.id != personal.id)
+    if (succ->fd == personal->id)
     {
         return;
+    } 
+
+    if (pred->fd != -1)
+    {
+        close(pred->fd);
+        pred->fd = -1;
     }
+    if (succ->fd != -1)
+    {
+        close(succ->fd);
+        succ->fd = -1;
+    }
+    pred->id = -1;  
+    personal->id = -1;
+    
+    
+    succ->id = -1;
+    strcpy(succ->IP, INIT_IP);
 
-    close(succ.fd);
-    close(pred.fd);
-
+    succ2->id = -1;
+    strcpy(succ2->IP, INIT_IP);
+    
     return;
 }
 
 void showTopology(tcpServerInfo personal, tcpServerInfo succ, tcpServerInfo succ2, tcpClientInfo pred)
 {
-    printf("Pred     ID%02d\n",  pred.id);
-    printf("Personal ID:%02d IP:%s TCP:%05d\n",  personal.id, personal.IP, personal.TCP);
-    printf("Succ     ID:%02d IP:%s TCP:%05d\n",  succ.id, succ.IP, succ.TCP);
-    printf("Succ2    ID:%02d IP:%s TCP:%05d\n",  succ2.id, succ2.IP, succ2.TCP);
 
+    printf("------------------------------------------------------------\n");
+    printf("Pred     ID%02d\n",  pred.id);
+    printf("Personal ID%02d IP%s TCP%05d\n",  personal.id, personal.IP, personal.TCP);
+    printf("Succ     ID%02d IP%s TCP%05d\n",  succ.id, succ.IP, succ.TCP);
+    printf("Succ2    ID%02d IP%s TCP%05d\n",  succ2.id, succ2.IP, succ2.TCP);
+    printf("------------------------------------------------------------\n");
     printf("\n");
     return;
 }

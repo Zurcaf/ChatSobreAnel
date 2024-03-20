@@ -57,7 +57,7 @@ int main(void)
 
     buffer[n] = '\0';
 
-    printf("echo: %s", buffer);
+    printf("echo: %s\n", buffer);
     close(fd);
     exit(0);
 }
