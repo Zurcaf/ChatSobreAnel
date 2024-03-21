@@ -5,8 +5,6 @@ int inputCheck(char* input, int *inputCount, char** inputArray)
 {
     *inputCount = 0;
 
-    
-
     messageTokenize(input, inputArray, inputCount, 1);
 
     if (strcmp(inputArray[0], "join") == 0 || strcmp(inputArray[0], "j") == 0)
@@ -236,16 +234,18 @@ void directJoin(tcpServerInfo personal, tcpServerInfo* Succ)
 
 //Implementação dos comandos da interface com o utlizador (4.2)
 void join(tcpServerInfo *personal, tcpServerInfo *succ, tcpServerInfo *succ2, tcpClientInfo *pred, udpServer server, int ring, int* nodesInRing)
+
 {
     int lineCounter = 0;
     int infoCounter = 0;
-    char message[1000];
+    
+    char message[MAX_RESPONSE];
 
     //inicializar buffer
     bufferInit(message);
 
     sprintf(message, "NODES %03d", ring);
-    nodeServSend(server, message);
+    nodeServSend(server, message, 0);
 
     //alocar memoria para um vetor de linhas
     char **lines = (char **)calloc(MAX_IDS, sizeof(char *));
@@ -319,7 +319,7 @@ void join(tcpServerInfo *personal, tcpServerInfo *succ, tcpServerInfo *succ2, tc
     bufferInit(message);
     sprintf(message, "REG %03d %02d %s %05d", ring, personal->id, personal->IP, personal->TCP);
     
-    nodeServSend(server, message);
+    nodeServSend(server, message, 0);
     printf("%s\n", message);
 
     return;
@@ -371,7 +371,7 @@ void leave(int ring, udpServer server, tcpServerInfo *personal, tcpServerInfo *s
     bufferInit(message);
 
     sprintf(message, "UNREG %03d %02d", ring, personal->id);
-    nodeServSend(server, message);
+    nodeServSend(server, message, 0);
 
     //Anel Unitário (só sair)
     if (succ->fd == personal->id)

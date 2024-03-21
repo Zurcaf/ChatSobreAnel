@@ -169,7 +169,7 @@ int tcpReceive (int fdRec, char *message)
     return 1;
 }
 
-void nodeServSend (udpServer server, char* buffer)
+void nodeServSend (udpServer server, char* buffer, int counter)
 {
     char aux_str[8];
     int fd, errcode;
@@ -180,7 +180,6 @@ void nodeServSend (udpServer server, char* buffer)
     struct addrinfo hints, *res;
 
     addrlen = sizeof(addr);
-
 
     // socket creation and verification
     fd = socket(AF_INET, SOCK_DGRAM, 0); // UDP socket
@@ -208,6 +207,38 @@ void nodeServSend (udpServer server, char* buffer)
         printf("Error messaging.");
         exit(1);
     }
+    freeaddrinfo(res);
+
+        //Para usar select
+    fd_set read_fds;
+    struct timeval timeout;
+
+    // Configurando o conjunto de descritores de arquivo para monitorar leitura no socket
+    FD_ZERO(&read_fds);
+    FD_SET(fd, &read_fds);
+
+    // Configurando o timeout para 5 segundos
+    timeout.tv_sec = WAIT_TIME;
+    timeout.tv_usec = 0;
+
+    // Usando select para esperar até que o socket esteja pronto para leitura
+    int selectResult = select(fd + 1, &read_fds, NULL, NULL, &timeout);
+
+    if (selectResult == -1) {
+        perror("Error in select");
+        exit(1);
+
+    } else if (selectResult == 0) {
+        // Timeout expirado
+        printf("Timeout occurred. No data received.\n");
+        counter++;
+        if (counter == 3)
+        {
+            printf("Error: No response from the server.\n");
+            exit(1);
+        }
+        nodeServSend(server, buffer, counter);
+    }
     
     bufferInit(buffer);
 
@@ -217,7 +248,6 @@ void nodeServSend (udpServer server, char* buffer)
 
     buffer[n] = '\0';
 
-    freeaddrinfo(res);
     close(fd);
 }
 

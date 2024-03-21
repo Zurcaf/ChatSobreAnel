@@ -11,7 +11,8 @@
 #include <sys/socket.h>
 #include <sys/time.h>
 
-int main(void) {
+int main(void) 
+{
     int fd;
     int errcode;
     char buffer[128 + 1];

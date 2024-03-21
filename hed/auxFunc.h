@@ -24,7 +24,7 @@ void tcpSend(int fdDest, char *buffer);
 int tcpReceive (int fdRec, char *message);
 
 //envio de mensagens para o servidor (UDP)
-void nodeServSend(udpServer server, char* buffer);
+void nodeServSend (udpServer server, char* buffer, int counter);
 
 void messageTokenize(char *message, char **inputArray, int *inputCount, int mode);
 

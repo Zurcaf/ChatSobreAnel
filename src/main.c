@@ -79,7 +79,7 @@ int main(int argc, char *argv[])
             // Alocação de memória para os argumentos
             arguments = (char **)calloc(MAX_ARGUMENTS, sizeof(char *));
             memoryCheck(arguments);
-            
+
             // printf("stdin is set\n");
             fgets(input, sizeof(input), stdin);
 
@@ -101,8 +101,7 @@ int main(int argc, char *argv[])
                     personal.id = atoi(arguments[2]);
 
                     join(&personal, &succ, &succ2, &pred, server, ring, &nodesInRing);
-                    printf("Number of nodes: %d\n", nodesInRing);
-                    if (nodesInRing == 0)
+                    if (nodesInRing == 0 || nodesInRing > MAX_NODES)
                     {
                         newNode = false;
                     }
@@ -168,7 +167,11 @@ int main(int argc, char *argv[])
             free(arguments);
             command = 0;
 
-            printf("Insert command: \n");
+            if (running)
+            {
+                printf("Insert command: \n");
+            }
+            
         }
 
         if (FD_ISSET(personal.fd, &readfds))
