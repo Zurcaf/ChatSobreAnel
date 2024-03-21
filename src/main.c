@@ -44,9 +44,7 @@ int main(int argc, char *argv[])
     // Inicialização das estruturas
     inicializer(0, &server, &personal, &succ, &succ2, &pred, &chordClient);
 
-    // Alocação de memória para os argumentos
-    arguments = (char **)calloc(MAX_ARGUMENTS, sizeof(char *));
-    memoryCheck(arguments);
+    
 
     // Verifing the arguments passed to the application
     argsCheck(argc, argv, personal.IP, &personal.TCP, server.regIP, &server.regUDP);
@@ -78,6 +76,10 @@ int main(int argc, char *argv[])
 
         if (FD_ISSET(STDIN_FILENO, &readfds))
         {
+            // Alocação de memória para os argumentos
+            arguments = (char **)calloc(MAX_ARGUMENTS, sizeof(char *));
+            memoryCheck(arguments);
+            
             // printf("stdin is set\n");
             fgets(input, sizeof(input), stdin);
 

@@ -247,7 +247,7 @@ void messageTokenize(char *message, char **inputArray, int *inputCount, int mode
 
         (*inputCount)++;
 
-        if (mode == 0)
+        if(mode == 0)
         {
             token = strtok(NULL, "\n");
         }

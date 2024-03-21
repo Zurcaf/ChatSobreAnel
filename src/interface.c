@@ -5,6 +5,8 @@ int inputCheck(char* input, int *inputCount, char** inputArray)
 {
     *inputCount = 0;
 
+    
+
     messageTokenize(input, inputArray, inputCount, 1);
 
     if (strcmp(inputArray[0], "join") == 0 || strcmp(inputArray[0], "j") == 0)
