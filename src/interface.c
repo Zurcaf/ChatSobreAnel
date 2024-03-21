@@ -238,7 +238,7 @@ void join(tcpServerInfo *personal, tcpServerInfo *succ, tcpServerInfo *succ2, tc
 {
     int lineCounter = 0;
     int infoCounter = 0;
-    
+
     char message[MAX_RESPONSE];
 
     //inicializar buffer
@@ -327,15 +327,15 @@ void join(tcpServerInfo *personal, tcpServerInfo *succ, tcpServerInfo *succ2, tc
 
 void closingConnections(tcpServerInfo *succ, tcpServerInfo *succ2, tcpClientInfo *pred, tcpServerInfo *personal, tcpServerInfo *chordClient, tcpClientInfo *chordServerList)
 {
-    // tcpClientInfo *aux;
-    // while (chordServerList != NULL)
-    // {
-    //     aux = chordServerList;
-    //     close(aux->fd);
+    tcpClientInfo *aux;
+    while (chordServerList != NULL)
+    {
+        aux = chordServerList;
+        close(aux->fd);
 
-    //     chordServerList = chordServerList->next;
-    //     free(aux);
-    // }
+        chordServerList = chordServerList->next;
+        free(aux);
+    }
 
     if(chordClient->fd != -1)
     {
@@ -396,5 +396,29 @@ void showTopology(tcpServerInfo personal, tcpServerInfo succ, tcpServerInfo succ
     printf("Succ2    ID%02d IP%s TCP%05d\n",  succ2.id, succ2.IP, succ2.TCP);
     printf("------------------------------------------------------------\n");
     printf("\n");
+    return;
+}
+
+void chordServerInit(tcpServerInfo *chordServer)
+{
+    struct sockaddr_in server_addr;
+
+    chordServer->fd = socket(AF_INET, SOCK_STREAM, 0);
+    if (chordServer->fd == -1)
+    {
+        perror("socket");
+        exit(1);
+    }
+
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_port = htons(chordServer->TCP);
+    server_addr.sin_addr.s_addr = inet_addr(chordServer->IP);
+
+    if (connect(chordServer->fd, (struct sockaddr *)&server_addr, sizeof(server_addr)) == -1)
+    {
+        perror("connect");
+        exit(1);
+    }
+
     return;
 }
