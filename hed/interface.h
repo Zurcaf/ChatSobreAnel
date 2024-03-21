@@ -10,9 +10,11 @@ void newSuccID(tcpServerInfo** nodes, tcpServerInfo *personal, tcpServerInfo *su
 
 void directJoin(tcpServerInfo personal, tcpServerInfo *Succ);
 
-void join(tcpServerInfo *personal, tcpServerInfo *succ, tcpServerInfo *succ2, tcpClientInfo *pred, udpServer server, int ring);
+void join(tcpServerInfo *personal, tcpServerInfo *succ, tcpServerInfo *succ2, tcpClientInfo *pred, udpServer server, int ring, int* nodesInRing);
 
-void leave(int ring, tcpServerInfo *personal, tcpServerInfo *succ, tcpServerInfo *succ2, tcpClientInfo *pred, udpServer server);
+void closingConnections(tcpServerInfo *succ, tcpServerInfo *succ2, tcpClientInfo *pred, tcpServerInfo *personal, tcpServerInfo *chordClient, tcpClientInfo *chordServerList);
+
+void leave(int ring, udpServer server, tcpServerInfo *personal, tcpServerInfo *succ, tcpServerInfo *succ2, tcpClientInfo *pred, tcpServerInfo *chordClient, tcpClientInfo *chordServerList);
 
 void showTopology(tcpServerInfo personal, tcpServerInfo succ, tcpServerInfo succ2, tcpClientInfo pred);
 

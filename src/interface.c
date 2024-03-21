@@ -4,27 +4,8 @@
 int inputCheck(char* input, int *inputCount, char** inputArray)
 {
     *inputCount = 0;
-    char *token;
 
-    token = strtok(input, " ");
-
-    while (*inputCount < MAX_ARGUMENTS)
-    {
-        if (token == NULL)
-            break;
-
-        inputArray[*inputCount] = (char *)malloc(strlen(token) + 1);
-        memoryCheck(inputArray[*inputCount]);
-
-        strcpy(inputArray[*inputCount], token);
-        strcat(inputArray[*inputCount], "\0");
-
-        token = strtok(NULL, " ");
-        *inputCount+= 1;
-    }
-    
-    inputArray[*inputCount - 1][strlen(inputArray[*inputCount - 1]) - 1] = '\0'; // Remover o \n do último argumento
-    inputArray[*inputCount] = NULL;                                  // Marcar o final da lista de argumentos
+    messageTokenize(input, inputArray, inputCount, 1);
 
     if (strcmp(inputArray[0], "join") == 0 || strcmp(inputArray[0], "j") == 0)
     {
@@ -252,11 +233,11 @@ void directJoin(tcpServerInfo personal, tcpServerInfo* Succ)
 }
 
 //Implementação dos comandos da interface com o utlizador (4.2)
-void join(tcpServerInfo *personal, tcpServerInfo *succ, tcpServerInfo *succ2, tcpClientInfo *pred, udpServer server, int ring)
+void join(tcpServerInfo *personal, tcpServerInfo *succ, tcpServerInfo *succ2, tcpClientInfo *pred, udpServer server, int ring, int* nodesInRing)
 {
     int lineCounter = 0;
     int infoCounter = 0;
-    char message[200];
+    char message[1000];
 
     //inicializar buffer
     bufferInit(message);
@@ -265,28 +246,30 @@ void join(tcpServerInfo *personal, tcpServerInfo *succ, tcpServerInfo *succ2, tc
     nodeServSend(server, message);
 
     //alocar memoria para um vetor de linhas
-    char **lines = (char **)malloc(MAX_IDS * sizeof(char *));
+    char **lines = (char **)calloc(MAX_IDS, sizeof(char *));
     memoryCheck(lines);
 
-    messageTokenize (message, lines, &lineCounter, '\n');
+    messageTokenize (message, lines, &lineCounter, 0);
 
-    char **information = (char **)malloc(MAX_IDS * sizeof(char *));
+    char **information = (char **)calloc(MAX_IDS, sizeof(char *));
     memoryCheck(information);
 
-    tcpServerInfo **nodes = (tcpServerInfo **)malloc(MAX_IDS * sizeof(tcpServerInfo*));
+    tcpServerInfo **nodes = (tcpServerInfo **)calloc(MAX_IDS, sizeof(tcpServerInfo*));
     memoryCheck(nodes);
 
     for (int i = 0; i < MAX_IDS; i++)
     {
-        nodes[i] = (tcpServerInfo *)malloc(sizeof(tcpServerInfo));
+        nodes[i] = (tcpServerInfo *)calloc(1, sizeof(tcpServerInfo));
         memoryCheck(nodes[i]);
 
         nodes[i]->id = -1;
     }
 
+    free(lines[0]);
+
     for (int i = 1; i < lineCounter; i++)
     {
-        messageTokenize(lines[i], information, &infoCounter, ' ');
+        messageTokenize(lines[i], information, &infoCounter, 1);
 
         nodes[atoi(information[0])]->id = atoi(information[0]);
         strcpy(nodes[atoi(information[0])]->IP, information[1]);
@@ -296,12 +279,14 @@ void join(tcpServerInfo *personal, tcpServerInfo *succ, tcpServerInfo *succ2, tc
         {
             free(information[j]);
         }
-        free(information);
 
         free(lines[i]);
         infoCounter = 0;
     }
+    free(information);
     free(lines);
+
+    *nodesInRing = lineCounter-1;
 
     // Confirmar que o ID do nó não está a ser usado
     newPersonalID(nodes, personal);
@@ -338,7 +323,45 @@ void join(tcpServerInfo *personal, tcpServerInfo *succ, tcpServerInfo *succ2, tc
     return;
 }
 
-void leave(int ring, tcpServerInfo *personal, tcpServerInfo *succ, tcpServerInfo *succ2, tcpClientInfo *pred, udpServer server)
+void closingConnections(tcpServerInfo *succ, tcpServerInfo *succ2, tcpClientInfo *pred, tcpServerInfo *personal, tcpServerInfo *chordClient, tcpClientInfo *chordServerList)
+{
+    // tcpClientInfo *aux;
+    // while (chordServerList != NULL)
+    // {
+    //     aux = chordServerList;
+    //     close(aux->fd);
+
+    //     chordServerList = chordServerList->next;
+    //     free(aux);
+    // }
+
+    if(chordClient->fd != -1)
+    {
+        close(chordClient->fd);
+    }
+
+    if(succ->fd != -1)
+    {
+        close(succ->fd);
+    }
+
+    if(succ2->fd != -1)
+    {
+        close(succ2->fd);
+    }
+
+    if(pred->fd != -1)
+    {
+        close(pred->fd);
+    }
+
+    if (personal->fd != -1)
+    {
+        close(personal->fd);
+    }
+}
+
+void leave(int ring, udpServer server, tcpServerInfo *personal, tcpServerInfo *succ, tcpServerInfo *succ2, tcpClientInfo *pred, tcpServerInfo *chordClient, tcpClientInfo *chordServerList)
 {
     char message[MAX_BUFFER];
 
@@ -348,33 +371,15 @@ void leave(int ring, tcpServerInfo *personal, tcpServerInfo *succ, tcpServerInfo
     sprintf(message, "UNREG %03d %02d", ring, personal->id);
     nodeServSend(server, message);
 
-    printf("%s\n", message);
-
     //Anel Unitário (só sair)
     if (succ->fd == personal->id)
     {
         return;
     } 
 
-    if (pred->fd != -1)
-    {
-        close(pred->fd);
-        pred->fd = -1;
-    }
-    if (succ->fd != -1)
-    {
-        close(succ->fd);
-        succ->fd = -1;
-    }
-    pred->id = -1;  
-    personal->id = -1;
+    closingConnections(succ, succ2, pred, personal, chordClient, chordServerList);
     
-    
-    succ->id = -1;
-    strcpy(succ->IP, INIT_IP);
-
-    succ2->id = -1;
-    strcpy(succ2->IP, INIT_IP);
+    inicializer(1, NULL, personal, succ, succ2, pred, chordClient);
     
     return;
 }

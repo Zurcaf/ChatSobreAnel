@@ -26,24 +26,24 @@ void bufferInit(char *buffer)
     buffer[MAX_BUFFER] = '\0';
 }
 
-void inicializer(udpServer *server, tcpServerInfo *personal, tcpServerInfo *succ, tcpServerInfo *succ2, tcpClientInfo *pred)
+void inicializer(int mode, udpServer *server, tcpServerInfo *personal, tcpServerInfo *succ, tcpServerInfo *succ2, tcpClientInfo *pred, tcpServerInfo *chordClient)
 {
-    //inicializar server
-    if (server != NULL)
+    if (mode == 0)
     {
+        //inicializar server 
         strcpy(server->regIP, "193.136.138.142");
         server->regUDP = 59000;
     }
-    
-    if (personal != NULL)
+
+    if (mode == 0)
     {
         //inicializar personal
-        personal->id = -1;
         strcpy(personal->IP, INIT_IP);
         personal->TCP = -1;
-        personal->fd = -1;
     }
-    
+
+    personal->id = -1;
+    personal->fd = -1;
 
     //inicializar succ
     succ->id = -1;
@@ -60,6 +60,10 @@ void inicializer(udpServer *server, tcpServerInfo *personal, tcpServerInfo *succ
     //inicializar pred  
     pred->id = -1;
     pred->fd = -1;
+
+    //inicializar chordClient
+    chordClient->id = -1;
+    chordClient->fd = -1;
 
 }
 
@@ -217,28 +221,41 @@ void nodeServSend (udpServer server, char* buffer)
     close(fd);
 }
 
-void messageTokenize(char *message, char **inputArray, int *inputCount, char delim)
+void messageTokenize(char *message, char **inputArray, int *inputCount, int mode)
 {
-    char *token, buffer[MAX_BUFFER];
+    char *token = NULL, buffer[MAX_BUFFER];
+
+    bufferInit(buffer);
 
     strcpy(buffer, message);
 
-    token = strtok(buffer, &delim);
-
-    while (*inputCount < MAX_NODES)
+    if (mode == 0)
     {
-        if (token == NULL)
-            break;
+        token = strtok(buffer, "\n");
+    }
+    else
+    {
+        token = strtok(buffer, " ");
+    }
 
-        inputArray[*inputCount] = (char *)malloc(strlen(token) + 1);
+    while (*inputCount < MAX_NODES && token != NULL)
+    {
+        inputArray[*inputCount] = (char *)calloc(1, strlen(token) + 1);
         memoryCheck(inputArray[*inputCount]);
 
         strcpy(inputArray[*inputCount], token);
-        strcat(inputArray[strlen(token)], "\0");
 
-        *inputCount+= 1;
+        (*inputCount)++;
 
-        token = strtok(NULL, &delim);
+        if (mode == 0)
+        {
+            token = strtok(NULL, "\n");
+        }
+        else
+        {
+            token = strtok(NULL, " ");
+        }
+
     }
     inputArray[*inputCount] = NULL;
 
@@ -398,7 +415,7 @@ void argsCheck(int argc, char *argv[], char *IP, int *TCP, char *regIP, int *reg
 int getMessageType(char* message, char** messageArray)
 {
     int inputCount = 0;
-    messageTokenize(message, messageArray, &inputCount, ' ');
+    messageTokenize(message, messageArray, &inputCount, 1);
 
     if (strcmp(messageArray[0], "ENTRY") == 0)
     {

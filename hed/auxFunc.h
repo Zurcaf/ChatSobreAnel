@@ -11,7 +11,7 @@ void fileCheck(FILE *filePointer, char *fileName);
 void bufferInit(char *buffer);
 
 //inicialização dos valores das estruturas
-void inicializer(udpServer *server, tcpServerInfo *personal, tcpServerInfo *succ, tcpServerInfo *succ2, tcpClientInfo *pred);
+void inicializer(int mode, udpServer *server, tcpServerInfo *personal, tcpServerInfo *succ, tcpServerInfo *succ2, tcpClientInfo *pred, tcpServerInfo *chordClient);
 
 //inicio de uma conexão TCP (servidor)
 void tcpServerInit(tcpServerInfo *server);
@@ -26,7 +26,7 @@ int tcpReceive (int fdRec, char *message);
 //envio de mensagens para o servidor (UDP)
 void nodeServSend(udpServer server, char* buffer);
 
-void messageTokenize(char *message, char **inputArray, int *inputCount, char delim);
+void messageTokenize(char *message, char **inputArray, int *inputCount, int mode);
 
 //inicializar SET's dos descritores
 void SETs_Init(fd_set *readfds, int *maxfd, int personal_fd, int succ_fd, int succ2_fd, int pred_fd);

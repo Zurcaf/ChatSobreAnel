@@ -22,13 +22,17 @@ int main(int argc, char *argv[])
     char **messageArray = NULL;
 
     // variaveis com informação do servidor e do nó   
-    int ring = -1;
-    bool oldNode = false;
+    int ring = -1, nodesInRing=0;
+    bool newNode = true;
+    bool running = true;
     udpServer server;
     tcpServerInfo personal;
     tcpServerInfo succ;
     tcpServerInfo succ2;
     tcpClientInfo pred;
+    
+    tcpServerInfo chordClient;
+    tcpClientInfo *chordServerList = NULL;
     
     // ignorar o sinal SIGPIPE
     struct sigaction act;
@@ -38,17 +42,15 @@ int main(int argc, char *argv[])
     if(sigaction(SIGPIPE,&act,NULL)==-1)/*error*/exit(1);
     
     // Inicialização das estruturas
-    inicializer(&server, &personal, &succ, &succ2, &pred);
+    inicializer(0, &server, &personal, &succ, &succ2, &pred, &chordClient);
 
     // Alocação de memória para os argumentos
-    arguments = (char **)malloc(MAX_ARGUMENTS * sizeof(char *));
+    arguments = (char **)calloc(MAX_ARGUMENTS, sizeof(char *));
     memoryCheck(arguments);
 
     // Verifing the arguments passed to the application
     argsCheck(argc, argv, personal.IP, &personal.TCP, server.regIP, &server.regUDP);
 
-    // Inicialização do servidorTCP de escuta do nó
-    tcpServerInit(&personal);
 
     printf("------------------------------------------------------------\n");
     printf("Application COR invoked with the following parameters:\n");
@@ -61,7 +63,7 @@ int main(int argc, char *argv[])
     printf("------------------------------------------------------------\n");
     printf("Insert command: \n");
 
-    while (1)
+    while (running)
     {
         // Inicialização dos descritores para o select
         SETs_Init(&readfds, &maxfd, personal.fd, succ.fd, succ2.fd, pred.fd);
@@ -83,20 +85,28 @@ int main(int argc, char *argv[])
 
             switch (command)
             {
-                case 0:
-                    break;
                 case 1:
-                    if (oldNode)
+                    if (!newNode)
                     {
                         printf("You are already in a ring\n");
                         break;
                     }
+                    // Inicialização do servidorTCP de escuta do nó
+                    tcpServerInit(&personal);
+
+                    // passagem de argumentos para a função join
                     ring = atoi(arguments[1]);
                     personal.id = atoi(arguments[2]);
-                    join(&personal, &succ, &succ2, &pred, server, ring);
+
+                    join(&personal, &succ, &succ2, &pred, server, ring, &nodesInRing);
+                    printf("Number of nodes: %d\n", nodesInRing);
+                    if (nodesInRing == 0)
+                    {
+                        newNode = false;
+                    }
                     break;
                 case 2:
-                    if (oldNode)
+                    if (!newNode)
                     {
                         printf("You are already in a ring\n");
                         break;
@@ -129,16 +139,23 @@ int main(int argc, char *argv[])
                     //message();
                     break;
                 case 10:
-                    if (oldNode)
+                    if (newNode)
                     {
                         printf("You are not in a ring\n");
                         break;
                     }
-                    leave(ring, &personal, &succ, &succ2, &pred, server);
-                    oldNode = false;
+                    else
+                    {
+                    leave(ring, server, &personal, &succ, &succ2, &pred, &chordClient, chordServerList);
+                    newNode = true;
+                    }
                     break;
                 case 11:
-                    exit(0);
+                    if (!newNode)
+                    {
+                        leave(ring, server, &personal, &succ, &succ2, &pred, &chordClient, chordServerList);                        
+                    }
+                    running=false;
                     break;
             }
 
@@ -161,7 +178,7 @@ int main(int argc, char *argv[])
                 exit(1); /* error */
             
             tcpReceive(newfd, message);
-            messageArray = (char **)malloc(MAX_ARGUMENTS * sizeof(char *));
+            messageArray = (char **)calloc(MAX_ARGUMENTS, sizeof(char *));
             memoryCheck(messageArray);
 
             messageType = getMessageType(message, messageArray);
@@ -205,9 +222,9 @@ int main(int argc, char *argv[])
                 case 2:
                     pred.fd = newfd;
                     pred.id = atoi(messageArray[1]);
-                    if (oldNode)
+                    if (newNode)
                     {
-                        oldNode = true;
+                        newNode = false;
                     }
                     else
                     {
@@ -273,7 +290,7 @@ int main(int argc, char *argv[])
             }
             else
             {
-                messageArray = (char **)malloc(MAX_ARGUMENTS * sizeof(char *));
+                messageArray = (char **)calloc(MAX_ARGUMENTS, sizeof(char *));
                 memoryCheck(messageArray);
 
                 messageType = getMessageType(message, messageArray);
@@ -354,7 +371,7 @@ int main(int argc, char *argv[])
             }
             else
             {
-                messageArray = (char **)malloc(MAX_ARGUMENTS * sizeof(char *));
+                messageArray = (char **)calloc(MAX_ARGUMENTS, sizeof(char *));
                 memoryCheck(messageArray);
 
                 messageType = getMessageType(message, messageArray);
@@ -379,20 +396,8 @@ int main(int argc, char *argv[])
         }
     }
 
-    if(succ.fd != -1)
-    {
-        close(succ.fd);
-    }
-    if(succ2.fd != -1)
-    {
-        close(succ2.fd);
-    }
-    if(pred.fd != -1)
-    {
-        close(pred.fd);
-    }
-
-    close(personal.fd);
+    // Fechar as conexões
+    closingConnections(&succ, &succ2, &pred, &personal, &chordClient, chordServerList);
     
     return 0;
 }
