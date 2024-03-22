@@ -476,6 +476,8 @@ int main(int argc, char *argv[])
 
                         stepsCount = 0;
 
+                        printf("Path: o%so\n", path);
+
                         //dividir path em array
                         messageTokenize(path, pathSteps, &stepsCount, 2);
 
@@ -484,8 +486,10 @@ int main(int argc, char *argv[])
                         {
                             pathArray[i] = atoi(pathSteps[i]);
                         }
-                        printf("Path: %s\n", path);
-                        printf("PathArray: %d\n", pathArray[0]);
+                        printf("Path: g%sg\n", path);
+                        printf("PathArray: g%dg\n", pathArray[0]);
+                        printf("PathArray: g%dg\n", pathArray[1]);
+                        printf("PathArray: g%dg\n", pathArray[2]);
 
                         if (personalInPathCheck(destination, pathArray, personal.id))
                         {
@@ -645,7 +649,7 @@ int main(int argc, char *argv[])
                         {
                             pathArray[i] = atoi(pathSteps[i]);
                         }
-                        printf("Path: %s\n", path);
+                        printf("Path: g%sg\n", path);
                         printf("PathArray: %d\n", pathArray[0]);
 
                         if (personalInPathCheck(destination, pathArray, personal.id))
@@ -799,7 +803,7 @@ int main(int argc, char *argv[])
                         {
                             pathArray[i] = atoi(pathSteps[i]);
                         }
-                        printf("Path: %s\n", path);
+                        printf("Path: g%sg\n", path);
                         printf("PathArray: %d\n", pathArray[0]);
 
                         if (personalInPathCheck(destination, pathArray, personal.id))
@@ -960,8 +964,8 @@ int main(int argc, char *argv[])
                             {
                                 pathArray[i] = atoi(pathSteps[i]);
                             }
-                            printf("Path: %s\n", path);
-                            printf("PathArray: %d\n", pathArray[0]);
+                            printf("Path: g%sg\n", path);
+                            printf("PathArray: g%dg\n", pathArray[0]);
 
                             if (personalInPathCheck(destination, pathArray, personal.id))
                             {
