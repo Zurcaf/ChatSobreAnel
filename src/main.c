@@ -115,7 +115,7 @@ int main(int argc, char *argv[])
                     succ.id = atoi(arguments[2]);
                     strcpy(succ.IP, arguments[3]);
                     succ.TCP = atoi(arguments[4]);
-                    directJoin(personal, &succ);
+                    directJoin(personal, &succ, &pred, &succ2);
                     break;
                 case 3:
                     chordServerInit(server, chordList, &chordPers, pred, succ, personal, ring);
@@ -523,7 +523,7 @@ int main(int argc, char *argv[])
             }
         }
     }
-    
+
     return 0;
 }
 

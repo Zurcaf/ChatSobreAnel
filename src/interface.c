@@ -216,9 +216,16 @@ void newSuccID(tcpServerInfo** nodes, tcpServerInfo *personal, tcpServerInfo *su
     succ->TCP = nodes[succ->id]->TCP;
 }
 
-void directJoin(tcpServerInfo personal, tcpServerInfo* Succ)
+void directJoin(tcpServerInfo personal, tcpServerInfo *Succ, tcpClientInfo *pred, tcpServerInfo *succ2)
 {
     char message[MAX_BUFFER];
+
+    if (Succ->id == personal.id)
+    {
+        succ2->id = personal.id;
+        pred->id = personal.id;
+        return;
+    }
 
     //inicializar buffer
     bufferInit(message);
@@ -304,7 +311,7 @@ void join(tcpServerInfo *personal, tcpServerInfo *succ, tcpServerInfo *succ2, tc
         newSuccID(nodes, personal, succ);
 
         //call direct join
-        directJoin(*personal, succ);
+        directJoin(*personal, succ, pred, succ2);
     }
     
     for (int i = 0; i < MAX_IDS; i++)
