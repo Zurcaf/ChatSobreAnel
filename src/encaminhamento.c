@@ -23,8 +23,16 @@ void freeTables(char ***RoutingTable, char **ShortestPathTable)
 {
     for (int i = 0; i < MAX_IDS; i++)
     {
+        if (RoutingTable[i] == NULL)
+        {
+            continue;
+        }
         for (int j = 0; j < MAX_IDS; j++)
         {
+            if (RoutingTable[i][j] == NULL)
+            {
+                continue;
+            }
             free(RoutingTable[i][j]);
         }
         free(RoutingTable[i]);
