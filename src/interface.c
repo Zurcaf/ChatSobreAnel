@@ -580,4 +580,47 @@ void chordServerInit(udpServer server, tcpClientInfo *chordList,  tcpServerInfo 
     return;
 }
 
-void showRouting(char*** RoutingTable, 
+void showRouting(char*** RoutingTable, int destination, int succ, int pred, int chordClient, tcpClientInfo *chordServerList)
+{
+    tcpClientInfo *aux = chordServerList;
+
+    printf("------------------------------------------------------------\n");
+    printf("Routing for %d \n", destination);
+    printf("------------------------------------------------------------\n");
+    printf("Neighbors\tPath");
+    printf("------------------------------------------------------------\n");
+    printf("%d\t%s\n", pred, RoutingTable[destination][pred]);
+    printf("%d\t%s\n", succ, RoutingTable[destination][succ]);
+    printf("%d\t%s\n", chordClient, RoutingTable[destination][chordClient]);
+    
+    while(aux != NULL)
+    {
+        printf("%d\t%s\n", aux->id, RoutingTable[destination][aux->id]);
+        aux = aux->next;
+    }
+    printf("------------------------------------------------------------\n");
+    return;
+}
+
+void showPath(char** ShortestPathTable, int destination)
+{
+    printf("------------------------------------------------------------\n");
+    printf("Shortest Path for %d \n", destination);
+    printf("------------------------------------------------------------\n");
+    printf("%s\n", ShortestPathTable[destination]);
+    printf("------------------------------------------------------------\n");
+    return;
+}
+
+void showFowarding(int* ExpeditionTable)
+{
+    printf("------------------------------------------------------------\n");
+    printf("Expedition Table\n");
+    printf("------------------------------------------------------------\n");
+    for (int i = 0; i < MAX_IDS; i++)
+    {
+        printf("Destination %d -> Next Node %d\n", i, ExpeditionTable[i]);
+    }
+    printf("------------------------------------------------------------\n");
+    return;
+}
