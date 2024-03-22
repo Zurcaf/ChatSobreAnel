@@ -27,8 +27,8 @@ int inputCheck(char* input, int *inputCount, char** inputArray)
         }
         
         fprintf(stderr, "ERROR: wrong format of the join arguments!\n");
-        fprintf(stderr, "\tring formate: 000\n");
-        fprintf(stderr, "\tid formate: 00\n");
+        fprintf(stderr, "\tring format: 000\n");
+        fprintf(stderr, "\tid format: 00\n");
         return (0);
     }
 
@@ -54,10 +54,10 @@ int inputCheck(char* input, int *inputCount, char** inputArray)
             }
         }
         fprintf(stderr, "ERROR: wrong format of the direct join arguments!\n");
-        fprintf(stderr, "\tid formate: 00\n");
-        fprintf(stderr, "\tSucc id formate: 00\n");
-        fprintf(stderr, "\tSucc IP formate: 000.000.000.000\n");
-        fprintf(stderr, "\tSucc Port formate: 00000\n");
+        fprintf(stderr, "\tid format: 00\n");
+        fprintf(stderr, "\tSucc id format: 00\n");
+        fprintf(stderr, "\tSucc IP format: 000.000.000.000\n");
+        fprintf(stderr, "\tSucc Port format: 00000\n");
 
         return 0;
 
@@ -95,29 +95,67 @@ int inputCheck(char* input, int *inputCount, char** inputArray)
 
     if (((strcmp(inputArray[0], "show") == 0) && strcmp(inputArray[1], "routing") == 0) || strcmp(inputArray[0], "sr") == 0)
     {
-        if (*inputCount != 2)
+        if (*inputCount != 2 && *inputCount != 3)
         {
             fprintf(stderr, "ERROR: wrong number of arguments for remove command!\n");
             return (0);
         }
-        return (6);
+        
+        if (*inputCount == 2 && strlen(inputArray[1]) == 2)
+        {
+            if (isdigit(inputArray[1][0]) && isdigit(inputArray[1][1]))
+            {
+               return (6); 
+            }
+        }
+        if (*inputCount == 3 && strlen(inputArray[2]) == 2 )
+        {
+            if (isdigit(inputArray[2][0]) && isdigit(inputArray[2][1]))
+            {
+              return (6);  
+            }
+        }
+
+        fprintf(stderr, "ERROR: wrong format of the show routing arguments!\n");
+        fprintf(stderr, "\tdest format: 00\n");
+        fprintf(stderr, "\tsucc format: 00\n");
+        return (0);
     }
 
     if(((strcmp(inputArray[0], "show") == 0) && strcmp(inputArray[1], "path") == 0) || strcmp(inputArray[0], "sp") == 0)
     {
-        if (*inputCount != 2)
+       if (*inputCount != 2 && *inputCount != 3)
         {
             fprintf(stderr, "ERROR: wrong number of arguments for remove command!\n");
             return (0);
         }
-        return (7);
+        
+        if (*inputCount == 2 && strlen(inputArray[1]) == 2)
+        {
+            if (isdigit(inputArray[1][0]) && isdigit(inputArray[1][1]))
+            {
+               return (7); 
+            }
+        }
+        if (*inputCount == 3 && strlen(inputArray[2]) == 2 )
+        {
+            if (isdigit(inputArray[2][0]) && isdigit(inputArray[2][1]))
+            {
+              return (7);  
+            }
+        }
+
+        fprintf(stderr, "ERROR: wrong format of the show routing arguments!\n");
+        fprintf(stderr, "\tdest format: 00\n");
+        fprintf(stderr, "\tsucc format: 00\n");
+        return (0);
     }
 
     if (((strcmp(inputArray[0], "show") == 0) && strcmp(inputArray[1], "forwarding") == 0) || strcmp(inputArray[0], "sf") == 0)
     {
         if (*inputCount != 1)
         {
-            fprintf(stderr, "ERROR: wrong number of arguments for remove command!\n");
+            fprintf(stderr, "ERROR: Wrong command format\n");
             return (0);
         }
         return (8);
@@ -539,3 +577,5 @@ void chordServerInit(udpServer server, tcpClientInfo *chordList,  tcpServerInfo 
 
     return;
 }
+
+void showRouting(char*** RoutingTable, 
