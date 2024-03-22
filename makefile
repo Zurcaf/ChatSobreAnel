@@ -42,22 +42,22 @@ clean:
 	rm -r $(OBJ)
 
 test:
-	$(BINDIR)/COR 127.0.0.1 59010
+	$(BINDIR)/COR 127.0.0.1 50040
 
 test1:
-	$(BINDIR)/COR 127.0.0.1 59011
+	$(BINDIR)/COR 127.0.0.1 50041
 
 test2:
-	$(BINDIR)/COR 127.0.0.1 59012
+	$(BINDIR)/COR 127.0.0.1 50042
 	
 test3:
-	$(BINDIR)/COR 127.0.0.1 59013
+	$(BINDIR)/COR 127.0.0.1 50043
 
 test4:
-	$(BINDIR)/COR 127.0.0.1 59014
+	$(BINDIR)/COR 127.0.0.1 50044
 
 test5:
-	$(BINDIR)/COR 127.0.0.1 59015
+	$(BINDIR)/COR 127.0.0.1 50045
 
 
 debug:
@@ -67,3 +67,4 @@ debug:
 valgrind:
 	valgrind --leak-check=full $(BINDIR)/COR 127.0.0.1 58002
 
+#j 067 09

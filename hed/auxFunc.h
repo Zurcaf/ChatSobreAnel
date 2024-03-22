@@ -29,7 +29,7 @@ void nodeServSend (udpServer server, char* buffer, int counter);
 void messageTokenize(char *message, char **inputArray, int *inputCount, int mode);
 
 //inicializar SET's dos descritores
-void SETs_Init(fd_set *readfds, int *maxfd, int personal_fd, int succ_fd, int succ2_fd, int pred_fd);
+void SETs_Init(fd_set *readfds, int *maxfd, int personal_fd, int succ_fd, int succ2_fd, int pred_fd, int chord_fd, tcpClientInfo *chordServerList);
 
 //verificação de endereço IP
 bool ValidIPAddress(const char *ipAddress);

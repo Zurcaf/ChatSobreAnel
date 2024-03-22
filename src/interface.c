@@ -216,9 +216,16 @@ void newSuccID(tcpServerInfo** nodes, tcpServerInfo *personal, tcpServerInfo *su
     succ->TCP = nodes[succ->id]->TCP;
 }
 
-void directJoin(tcpServerInfo personal, tcpServerInfo* Succ)
+void directJoin(tcpServerInfo personal, tcpServerInfo *Succ, tcpClientInfo *pred, tcpServerInfo *succ2)
 {
     char message[MAX_BUFFER];
+
+    if (Succ->id == personal.id)
+    {
+        succ2->id = personal.id;
+        pred->id = personal.id;
+        return;
+    }
 
     //inicializar buffer
     bufferInit(message);
@@ -234,11 +241,10 @@ void directJoin(tcpServerInfo personal, tcpServerInfo* Succ)
 
 //Implementação dos comandos da interface com o utlizador (4.2)
 void join(tcpServerInfo *personal, tcpServerInfo *succ, tcpServerInfo *succ2, tcpClientInfo *pred, udpServer server, int ring, int* nodesInRing)
-
 {
     int lineCounter = 0;
     int infoCounter = 0;
-    
+
     char message[MAX_RESPONSE];
 
     //inicializar buffer
@@ -290,6 +296,15 @@ void join(tcpServerInfo *personal, tcpServerInfo *succ, tcpServerInfo *succ2, tc
 
     *nodesInRing = lineCounter-1;
 
+    printf("Nodes in ring: %d\n", *nodesInRing);
+
+    if (*nodesInRing == MAX_NODES)
+    {
+        personal->id = -1;
+        fprintf(stderr, "ERROR: Ring is full!\n");
+        return;
+    }
+    
     // Confirmar que o ID do nó não está a ser usado
     newPersonalID(nodes, personal);
 
@@ -305,7 +320,7 @@ void join(tcpServerInfo *personal, tcpServerInfo *succ, tcpServerInfo *succ2, tc
         newSuccID(nodes, personal, succ);
 
         //call direct join
-        directJoin(*personal, succ);
+        directJoin(*personal, succ, pred, succ2);
     }
     
     for (int i = 0; i < MAX_IDS; i++)
@@ -327,15 +342,15 @@ void join(tcpServerInfo *personal, tcpServerInfo *succ, tcpServerInfo *succ2, tc
 
 void closingConnections(tcpServerInfo *succ, tcpServerInfo *succ2, tcpClientInfo *pred, tcpServerInfo *personal, tcpServerInfo *chordClient, tcpClientInfo *chordServerList)
 {
-    // tcpClientInfo *aux;
-    // while (chordServerList != NULL)
-    // {
-    //     aux = chordServerList;
-    //     close(aux->fd);
+    tcpClientInfo *aux;
+    while (chordServerList != NULL)
+    {
+        aux = chordServerList;
+        close(aux->fd);
 
-    //     chordServerList = chordServerList->next;
-    //     free(aux);
-    // }
+        chordServerList = chordServerList->next;
+        free(aux);
+    }
 
     if(chordClient->fd != -1)
     {
@@ -386,15 +401,141 @@ void leave(int ring, udpServer server, tcpServerInfo *personal, tcpServerInfo *s
     return;
 }
 
-void showTopology(tcpServerInfo personal, tcpServerInfo succ, tcpServerInfo succ2, tcpClientInfo pred)
+void showTopology(tcpServerInfo personal, tcpServerInfo succ, tcpServerInfo succ2, tcpClientInfo pred, tcpServerInfo chordClient, tcpClientInfo *chordServerList)
 {
-
+    int chordsCount = 0;
+    tcpClientInfo *aux = chordServerList;
     printf("------------------------------------------------------------\n");
-    printf("Pred     ID%02d\n",  pred.id);
-    printf("Personal ID%02d IP%s TCP%05d\n",  personal.id, personal.IP, personal.TCP);
-    printf("Succ     ID%02d IP%s TCP%05d\n",  succ.id, succ.IP, succ.TCP);
-    printf("Succ2    ID%02d IP%s TCP%05d\n",  succ2.id, succ2.IP, succ2.TCP);
+    printf("Pred      ID%02d\n",  pred.id);
+    printf("Personal  ID%02d IP%s TCP%05d\n",  personal.id, personal.IP, personal.TCP);
+    printf("Succ      ID%02d IP%s TCP%05d\n",  succ.id, succ.IP, succ.TCP);
+    printf("Succ2     ID%02d IP%s TCP%05d\n",  succ2.id, succ2.IP, succ2.TCP);
+    printf("Chord%d    ID%02d IP%s TCP%05d\n",  chordsCount,chordClient.id, chordClient.IP, chordClient.TCP);
+    chordsCount++;
+    
+    while (aux != NULL)
+    {
+        printf("Chord%d    ID%02d\n",  chordsCount, aux->id);
+        chordsCount++;
+        aux = aux->next;
+    }
     printf("------------------------------------------------------------\n");
     printf("\n");
+    return;
+}
+
+void chordServerInit(udpServer server, tcpClientInfo *chordList,  tcpServerInfo *chordPers, tcpClientInfo pred, tcpServerInfo succ, tcpServerInfo personal, int ring)
+{
+    int infoCounter = 0;
+    int lineCounter = 0;
+
+    char message[MAX_RESPONSE];
+
+    //inicializar buffer
+    bufferInit(message);
+
+    sprintf(message, "NODES %03d", ring);
+    nodeServSend(server, message, 0);
+
+    //alocar memoria para um vetor de linhas
+    char **lines = (char **)calloc(MAX_IDS, sizeof(char *));
+    memoryCheck(lines);
+
+    messageTokenize (message, lines, &lineCounter, 0);
+
+    char **information = (char **)calloc(MAX_IDS, sizeof(char *));
+    memoryCheck(information);
+
+    tcpServerInfo **nodes = (tcpServerInfo **)calloc(MAX_IDS, sizeof(tcpServerInfo*));
+    memoryCheck(nodes);
+
+    for (int i = 0; i < MAX_IDS; i++)
+    {
+        nodes[i] = (tcpServerInfo *)calloc(1, sizeof(tcpServerInfo));
+        memoryCheck(nodes[i]);
+
+        nodes[i]->id = -1;
+    }
+
+    free(lines[0]);
+
+    for (int i = 1; i < lineCounter; i++)
+    {
+        messageTokenize(lines[i], information, &infoCounter, 1);
+
+        nodes[i]->id = atoi(information[0]);
+        strcpy(nodes[i]->IP, information[1]);
+        nodes[i]->TCP = atoi(information[2]);
+
+        for (int j = 0; j < infoCounter; j++)
+        {
+            free(information[j]);
+        }
+
+        free(lines[i]);
+        infoCounter = 0;
+    }
+    free(information);
+    free(lines);
+
+    bool flag =false;
+    tcpClientInfo *aux = chordList;
+
+    for (int i=0; i<lineCounter; i++)
+    {
+        if (nodes[i]->id == succ.id)
+        {
+            continue;    
+        }
+        if (nodes[i]->id == pred.id)
+        {
+            continue;
+        }
+        if (nodes[i]->id == personal.id)
+        {
+            continue;
+        }
+        
+        while(aux != NULL)
+        {
+            if (nodes[i]->id == aux->id)
+            {
+                flag = true;
+            }
+            if (flag)
+                break;
+            
+            aux = aux->next;
+        }
+
+        if (flag)
+            continue;
+        
+        chordPers->id = nodes[i]->id;
+        strcpy(chordPers->IP, nodes[i]->IP);
+        chordPers->TCP = nodes[i]->TCP;
+    }
+
+    if (chordPers->id == -1)
+    {
+        printf("No available Nodes to make a Chord");
+        return;
+    }
+
+    tcpClientInit(chordPers);
+    
+    char message2[MAX_BUFFER];
+    bufferInit(message2);
+
+    sprintf(message2, "CHORD %02d\n", personal.id);
+    tcpSend(chordPers->fd, message2);
+
+
+    for (int i = 0; i < MAX_IDS; i++)
+    {
+        free(nodes[i]);
+    }
+    free(nodes);
+
     return;
 }
