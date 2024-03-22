@@ -26,7 +26,7 @@ void bufferInit(char *buffer)
     buffer[MAX_BUFFER] = '\0';
 }
 
-void inicializer(int mode, udpServer *server, tcpServerInfo *personal, tcpServerInfo *succ, tcpServerInfo *succ2, tcpClientInfo *pred, tcpServerInfo *chordClient)
+void inicializer(int mode, udpServer *server, tcpServerInfo *personal, tcpServerInfo *succ, tcpServerInfo *succ2, tcpClientInfo *pred, tcpServerInfo *chordPers)
 {
     if (mode == 0)
     {
@@ -61,10 +61,11 @@ void inicializer(int mode, udpServer *server, tcpServerInfo *personal, tcpServer
     pred->id = -1;
     pred->fd = -1;
 
-    //inicializar chordClient
-    chordClient->id = -1;
-    chordClient->fd = -1;
-
+    //inicializar chordPers
+    chordPers->id = -1;
+    strcpy(chordPers->IP, INIT_IP);
+    chordPers->TCP = -1;
+    chordPers->fd = -1;
 }
 
 void tcpServerInit(tcpServerInfo *server)
@@ -300,8 +301,10 @@ void messageTokenize(char *message, char **inputArray, int *inputCount, int mode
     }
 }
 
-void SETs_Init(fd_set *readfds, int *maxfd, int personal_fd, int succ_fd, int succ2_fd, int pred_fd)
+void SETs_Init(fd_set *readfds, int *maxfd, int personal_fd, int succ_fd, int succ2_fd, int pred_fd, int chord_fd, tcpClientInfo *chordServerList)
 {
+        tcpClientInfo *chordAux = chordServerList;
+
         FD_ZERO(readfds);  // Limpa o conjunto de descritores
         FD_SET(STDIN_FILENO, readfds);  // Adiciona o descritor de entrada padrão (stdin)
 
@@ -327,6 +330,20 @@ void SETs_Init(fd_set *readfds, int *maxfd, int personal_fd, int succ_fd, int su
             FD_SET(pred_fd, readfds);  // Adiciona o descritor do socket
            *maxfd = (pred_fd >*maxfd) ? pred_fd :*maxfd;
         }
+
+        if (chord_fd != -1)
+        {
+            FD_SET(chord_fd, readfds);  // Adiciona o descritor do socket
+            *maxfd = (chord_fd >*maxfd) ? chord_fd :*maxfd;
+        }
+
+        while(chordAux != NULL)
+        {
+            FD_SET(chordAux->fd, readfds);  // Adiciona o descritor do socket
+            *maxfd = (chordAux->fd >*maxfd) ? chordAux->fd :*maxfd;
+            chordAux = chordAux->next;
+        }   
+        
 
 }
 

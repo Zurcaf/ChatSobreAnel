@@ -25,14 +25,15 @@ int main(int argc, char *argv[])
     int ring = -1, nodesInRing=0;
     bool newNode = true;
     bool running = true;
+    bool chordExit = false;
     udpServer server;
     tcpServerInfo personal;
     tcpServerInfo succ;
     tcpServerInfo succ2;
     tcpClientInfo pred;
     
-    tcpServerInfo chordClient;
-    tcpClientInfo *chordServerList = NULL;
+    tcpServerInfo chordPers;
+    tcpClientInfo *chordList = NULL, *chordAux = NULL, *chordAux2 = NULL;
     
     // ignorar o sinal SIGPIPE
     struct sigaction act;
@@ -42,13 +43,10 @@ int main(int argc, char *argv[])
     if(sigaction(SIGPIPE,&act,NULL)==-1)/*error*/exit(1);
     
     // Inicialização das estruturas
-    inicializer(0, &server, &personal, &succ, &succ2, &pred, &chordClient);
-
-    
+    inicializer(0, &server, &personal, &succ, &succ2, &pred, &chordPers);
 
     // Verifing the arguments passed to the application
     argsCheck(argc, argv, personal.IP, &personal.TCP, server.regIP, &server.regUDP);
-
 
     printf("------------------------------------------------------------\n");
     printf("Application COR invoked with the following parameters:\n");
@@ -64,7 +62,7 @@ int main(int argc, char *argv[])
     while (running)
     {
         // Inicialização dos descritores para o select
-        SETs_Init(&readfds, &maxfd, personal.fd, succ.fd, succ2.fd, pred.fd);
+        SETs_Init(&readfds, &maxfd, personal.fd, succ.fd, succ2.fd, pred.fd, chordPers.fd, chordList);
 
         // Esperar por atividade com o select
         // printf ("Espera por atividade\n");
@@ -93,6 +91,7 @@ int main(int argc, char *argv[])
                         printf("You are already in a ring\n");
                         break;
                     }
+                    
                     // Inicialização do servidorTCP de escuta do nó
                     tcpServerInit(&personal);
 
@@ -119,13 +118,17 @@ int main(int argc, char *argv[])
                     directJoin(personal, &succ);
                     break;
                 case 3:
-                    //chord();
+                    chordServerInit(server, chordList, &chordPers, pred, succ, personal, ring);
                     break;
                 case 4:
-                    //removeChord();
+                    close(chordPers.fd);
+                    chordPers.fd = -1;
+                    chordPers.id = -1;
+                    chordPers.TCP = -1;
+                    strcpy(chordPers.IP, INIT_IP);
                     break;
                 case 5:
-                    showTopology(personal, succ, succ2, pred);
+                    showTopology(personal, succ, succ2, pred, chordPers, chordList);
                     break;
                 case 6:
                     //showRouting();
@@ -147,14 +150,14 @@ int main(int argc, char *argv[])
                     }
                     else
                     {
-                    leave(ring, server, &personal, &succ, &succ2, &pred, &chordClient, chordServerList);
+                    leave(ring, server, &personal, &succ, &succ2, &pred, &chordPers, chordList);
                     newNode = true;
                     }
                     break;
                 case 11:
                     if (!newNode)
                     {
-                        leave(ring, server, &personal, &succ, &succ2, &pred, &chordClient, chordServerList);                        
+                        leave(ring, server, &personal, &succ, &succ2, &pred, &chordPers, chordList);                        
                     }
                     running=false;
                     break;
@@ -171,12 +174,11 @@ int main(int argc, char *argv[])
             {
                 printf("Insert command: \n");
             }
-            
         }
 
         if (FD_ISSET(personal.fd, &readfds))
         {
-            // printf("Canal de escuta is set\n");
+            printf("Canal de escuta is set\n");
 
             // Novas conexões no socket
             if ((newfd = accept(personal.fd, NULL, NULL)) == -1) 
@@ -241,6 +243,15 @@ int main(int argc, char *argv[])
 
                 //caso seja um CHORD
                 case 4:
+                    chordAux = (tcpClientInfo *)calloc(1, sizeof(tcpClientInfo));
+                    memoryCheck(chordAux);
+
+                    chordAux->id = atoi(messageArray[1]);\
+                    chordAux->fd = newfd;
+                    chordAux->next = NULL;
+
+                    chordAux->next = chordList;
+                    chordList = chordAux;
                     break;
                 default:
                     break;
@@ -399,10 +410,122 @@ int main(int argc, char *argv[])
 
             }
         }
+
+        if (FD_ISSET(chordPers.fd, &readfds))
+        {
+            // printf("Chord is set\n");
+            aux = tcpReceive(chordPers.fd, message);
+            if (aux == 0)
+            {
+                printf("Canal do chord fechado\n");
+                if(chordPers.fd!= -1)
+                {
+                    close(chordPers.fd);
+                    chordPers.fd = -1;
+                    chordPers.id = -1;
+                    chordPers.TCP = -1;
+                    strcpy(chordPers.IP, INIT_IP);
+                }
+            }
+            else
+            {
+                messageArray = (char **)calloc(MAX_ARGUMENTS, sizeof(char *));
+                memoryCheck(messageArray);
+
+                messageType = getMessageType(message, messageArray);
+
+                switch (messageType)
+                {
+                    case 0:
+                        printf("Error in the chord channel (mensagem não reconhecida)\n"); 
+                        break;
+                    default:
+                        break;
+                }
+
+                for(int i = 0; messageArray[i] != NULL; i++)
+                {
+                    free(messageArray[i]);
+                }
+                free(messageArray);
+                messageType = 0;
+
+            }
+        }
+
+        chordAux2 = NULL;
+        chordAux = chordList;
+        chordExit = false;
+
+        while(chordAux != NULL)
+        {
+            if (FD_ISSET(chordAux->fd, &readfds))
+            {
+                // printf("Chord is set\n");
+
+                aux = tcpReceive(chordAux->fd, message);
+                if (aux == 0)
+                {
+                    printf("Canal do chord fechado\n");
+                    chordExit = true;
+
+                    if(chordAux->fd != -1)
+                    {
+                        close(chordAux->fd);
+                        chordAux->fd = -1;
+                    }
+                }
+                else
+                {
+                    messageArray = (char **)calloc(MAX_ARGUMENTS, sizeof(char *));
+                    memoryCheck(messageArray);
+
+                    messageType = getMessageType(message, messageArray);
+
+                    switch (messageType)
+                    {
+                        case 0:
+                            printf("Error in the chord channel (mensagem não reconhecida)\n"); 
+                            break;
+                        default:
+                            break;
+                    }
+
+                    for(int i = 0; messageArray[i] != NULL; i++)
+                    {
+                        free(messageArray[i]);
+                    }
+                    free(messageArray);
+                    messageType = 0;
+
+                }
+            }
+            
+            if(chordExit)
+            {
+                if (chordAux2 != NULL)
+                {
+                    chordAux2->next = chordAux->next;
+                    free(chordAux);
+                    chordAux = chordAux2->next;
+                }
+                else
+                {
+                    chordList = chordAux->next;
+                    free(chordAux);
+                    chordAux = chordList;
+                }
+            }
+            else
+            {
+                chordAux2 = chordAux;
+                chordAux = chordAux->next;
+            }
+        }
     }
 
     // Fechar as conexões
-    closingConnections(&succ, &succ2, &pred, &personal, &chordClient, chordServerList);
+    closingConnections(&succ, &succ2, &pred, &personal, &chordPers, chordList);
     
     return 0;
 }

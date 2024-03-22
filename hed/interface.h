@@ -16,6 +16,8 @@ void closingConnections(tcpServerInfo *succ, tcpServerInfo *succ2, tcpClientInfo
 
 void leave(int ring, udpServer server, tcpServerInfo *personal, tcpServerInfo *succ, tcpServerInfo *succ2, tcpClientInfo *pred, tcpServerInfo *chordClient, tcpClientInfo *chordServerList);
 
-void showTopology(tcpServerInfo personal, tcpServerInfo succ, tcpServerInfo succ2, tcpClientInfo pred);
+void showTopology(tcpServerInfo personal, tcpServerInfo succ, tcpServerInfo succ2, tcpClientInfo pred, tcpServerInfo chordClient, tcpClientInfo *chordServerList);
+
+void chordServerInit(udpServer server, tcpClientInfo *chordList,  tcpServerInfo *chordPers, tcpClientInfo pred, tcpServerInfo succ, tcpServerInfo personal, int ring);
 
 #endif

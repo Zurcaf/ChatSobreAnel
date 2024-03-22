@@ -36,7 +36,7 @@ int main(void)
 
     printf("Connected\n");
 
-    n = sendto(fd, "UNREG 067 09", 32, 0, res->ai_addr, res->ai_addrlen);
+    n = sendto(fd, "RST 067", 32, 0, res->ai_addr, res->ai_addrlen);
     // n = sendto(fd, "UNREG 067 10", 32, 0, res->ai_addr, res->ai_addrlen);
     // n = sendto(fd, "UNREG 067 11", 32, 0, res->ai_addr, res->ai_addrlen);
 
