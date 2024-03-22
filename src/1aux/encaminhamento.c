@@ -111,12 +111,12 @@ void updateTables(int origin, int destination, int *pathArray, int personal) {
 
    //Atualizar a tabela de encaminhamento
         strcpy(RoutingTable[origin][destination], path);
-    // Atualizar a tabela de caminhos mais curtos
-    // int minHyphens = -1;
+    //Atualizar a tabela de caminhos mais curtos
+    int minHyphens = -1;
     char *minPath = NULL;
-    // int hyphens = 0;
+    int hyphens = 0;
     for (int i = 0; i < size; i++) {
-        // hyphens = countHyphens(RoutingTable[i]);
+         hyphens = countHyphens(RoutingTable[i]);
 
         if (minHyphens == -1 || hyphens < minHyphens) {
             minHyphens = hyphens;
@@ -126,7 +126,7 @@ void updateTables(int origin, int destination, int *pathArray, int personal) {
         }
         
     }
-    }
+    
     if(minPath != ShortPatrhTable[destination]){
         strcpy(ShortPathTable[destination], minPath);
     }
@@ -152,8 +152,8 @@ void updateTables(int origin, int destination, int *pathArray, int personal) {
 
         strcpy(ExpeditionTable[destination], expPath);
 
+}
 
-    }
   
 void printRoutingTable(int personal) {
     for (int i = 0; i < MAX_NODES; i++) {
