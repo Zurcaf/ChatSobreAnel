@@ -653,7 +653,6 @@ int main(int argc, char *argv[])
                             printf("Personal in path\n");
                             break;
                         }
-
                         
                         sprintf (auxString, "%02d-", personal.id);
                         strcat (auxString, path);
