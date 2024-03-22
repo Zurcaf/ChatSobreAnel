@@ -264,9 +264,12 @@ void messageTokenize(char *message, char **inputArray, int *inputCount, int mode
     {
         token = strtok(buffer, "\n");
     }
-    else
+    else if (mode == 1)
     {
         token = strtok(buffer, " ");
+    }else
+    {
+        token = strtok(buffer, "-");
     }
 
     while (*inputCount < MAX_ARGUMENTS && token != NULL)
@@ -282,11 +285,13 @@ void messageTokenize(char *message, char **inputArray, int *inputCount, int mode
         {
             token = strtok(NULL, "\n");
         }
-        else
+        else if (mode == 1)        
         {
             token = strtok(NULL, " ");
+        }else
+        {
+            token = strtok(NULL, "-");
         }
-
     }
     inputArray[*inputCount] = NULL;
 

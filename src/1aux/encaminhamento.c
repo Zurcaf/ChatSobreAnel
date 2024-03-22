@@ -16,6 +16,7 @@ char* ArrayToString(int Arr[], int size, int personal) {
         printf("Memory allocation failed\n");
         exit(1);
     }
+    
     // inicializar a string result
     snprintf(result, sizeof(result), "%d-", personal);
 
