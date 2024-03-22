@@ -360,6 +360,7 @@ void closingConnections(tcpServerInfo *succ, tcpServerInfo *succ2, tcpClientInfo
     {
         close(personal->fd);
     }
+    printf("FD: -%d-", personal->fd);
 }
 
 void leave(int ring, udpServer server, tcpServerInfo *personal, tcpServerInfo *succ, tcpServerInfo *succ2, tcpClientInfo *pred, tcpServerInfo *chordClient, tcpClientInfo *chordServerList)

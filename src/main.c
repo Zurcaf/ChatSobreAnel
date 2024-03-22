@@ -523,9 +523,6 @@ int main(int argc, char *argv[])
             }
         }
     }
-
-    // Fechar as conexões
-    closingConnections(&succ, &succ2, &pred, &personal, &chordPers, chordList);
     
     return 0;
 }
