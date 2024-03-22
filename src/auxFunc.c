@@ -269,7 +269,7 @@ void messageTokenize(char *message, char **inputArray, int *inputCount, int mode
         token = strtok(buffer, " ");
     }
 
-    while (*inputCount < MAX_NODES && token != NULL)
+    while (*inputCount < MAX_ARGUMENTS && token != NULL)
     {
         inputArray[*inputCount] = (char *)calloc(1, strlen(token) + 1);
         memoryCheck(inputArray[*inputCount]);

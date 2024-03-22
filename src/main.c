@@ -100,7 +100,7 @@ int main(int argc, char *argv[])
                     personal.id = atoi(arguments[2]);
 
                     join(&personal, &succ, &succ2, &pred, server, ring, &nodesInRing);
-                    if (nodesInRing == 0 || nodesInRing > MAX_NODES)
+                    if (nodesInRing == 0)
                     {
                         newNode = false;
                     }

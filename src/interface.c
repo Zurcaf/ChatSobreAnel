@@ -296,6 +296,15 @@ void join(tcpServerInfo *personal, tcpServerInfo *succ, tcpServerInfo *succ2, tc
 
     *nodesInRing = lineCounter-1;
 
+    printf("Nodes in ring: %d\n", *nodesInRing);
+
+    if (*nodesInRing == MAX_NODES)
+    {
+        personal->id = -1;
+        fprintf(stderr, "ERROR: Ring is full!\n");
+        return;
+    }
+    
     // Confirmar que o ID do nó não está a ser usado
     newPersonalID(nodes, personal);
 
@@ -367,7 +376,6 @@ void closingConnections(tcpServerInfo *succ, tcpServerInfo *succ2, tcpClientInfo
     {
         close(personal->fd);
     }
-    printf("FD: -%d-", personal->fd);
 }
 
 void leave(int ring, udpServer server, tcpServerInfo *personal, tcpServerInfo *succ, tcpServerInfo *succ2, tcpClientInfo *pred, tcpServerInfo *chordClient, tcpClientInfo *chordServerList)
