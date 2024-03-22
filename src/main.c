@@ -48,6 +48,7 @@ int main(int argc, char *argv[])
 
     //Nós no anel
     int idNodesInRing[MAX_NODES];
+    int stepsCount = 0;
 
     int origin, destination;
     char path[MAX_PATH];
@@ -66,6 +67,8 @@ int main(int argc, char *argv[])
     {
         idNodesInRing[i] = -1;
     }
+
+    int showDest;
     
 
     // ignorar o sinal SIGPIPE
@@ -164,9 +167,28 @@ int main(int argc, char *argv[])
                     showTopology(personal, succ, succ2, pred, chordPers, chordList);
                     break;
                 case 6:
-                    //showRouting();
+                    if (argumentCount == 2)
+                    {
+                        showDest = atoi(arguments[1]);
+                        //showRouting();
+                    }
+                    else
+                    {
+                        showDest = atoi(arguments[2]);
+                        //showRouting();
+                    }
                     break;
                 case 7:
+                    if (argumentCount == 2)
+                    {
+                        showDest = atoi(arguments[1]);
+                        //showRouting();
+                    }
+                    else
+                    {
+                        showDest = atoi(arguments[2]);
+                        //showPath();
+                    }
                     //showPath();
                     break;
                 case 8:
@@ -183,14 +205,14 @@ int main(int argc, char *argv[])
                     }
                     else
                     {
-                    leave(ring, server, &personal, &succ, &succ2, &pred, &chordPers, chordList);
+                    leave(ring, server, &personal, &succ, &succ2, &pred, &chordPers, chordList, RoutingTable, ShortestPathTable);
                     newNode = true;
                     }
                     break;
                 case 11:
                     if (!newNode)
                     {
-                        leave(ring, server, &personal, &succ, &succ2, &pred, &chordPers, chordList);                        
+                        leave(ring, server, &personal, &succ, &succ2, &pred, &chordPers, chordList, RoutingTable, ShortestPathTable);                    
                     }
                     running=false;
                     break;
@@ -442,20 +464,7 @@ int main(int argc, char *argv[])
                                                 bufferInit(message);
                                                 sprintf(message, "ROUTE %02d %02d %s\n", personal.id, destination, ShortestPathTable[destination]);
 
-                                                if (pred.fd != -1)
-                                                {
-                                                    tcpSend(pred.fd, message);
-                                                }
-                                                if(chordPers.fd != -1)
-                                                {
-                                                    tcpSend(chordPers.fd, message);
-                                                }
-                                                chordAux = chordList;
-                                                while (chordList != NULL)
-                                                {
-                                                    tcpSend(chordList->fd, message);
-                                                    chordList = chordList->next;
-                                                }
+                                                sendToAll(message, -1, pred.fd, chordPers.fd, chordList);
 
                                                 ExpeditionTable[destination] = pathArray[0];
                                                 printf ("ExpeditionTable[%d]: %d\n", destination, ExpeditionTable[destination]);
@@ -472,7 +481,7 @@ int main(int argc, char *argv[])
                         pathSteps = (char **)calloc(MAX_NODES, sizeof(char*));
                         memoryCheck(pathSteps);
 
-                        int stepsCount = 0;
+                        stepsCount = 0;
 
                         //dividir path em array
                         messageTokenize(path, pathSteps, &stepsCount, 2);
@@ -506,20 +515,7 @@ int main(int argc, char *argv[])
                                 bufferInit(message);
                                 sprintf(message, "ROUTE %02d %02d %s\n", personal.id, destination, ShortestPathTable[destination]);
                                 
-                                if (pred.fd != -1)
-                                {
-                                    tcpSend(pred.fd, message);
-                                }
-                                if(chordPers.fd != -1)
-                                {
-                                    tcpSend(chordPers.fd, message);
-                                }
-                                chordAux = chordList;
-                                while (chordList != NULL)
-                                {
-                                    tcpSend(chordList->fd, message);
-                                    chordList = chordList->next;
-                                }
+                                sendToAll(message, -1, pred.fd, chordPers.fd, chordList);
                                 
                                 ExpeditionTable[destination] = pathArray[0];
                                 printf ("ExpeditionTable[%d]: %d\n", destination, ExpeditionTable[destination]);
@@ -577,6 +573,126 @@ int main(int argc, char *argv[])
                     case 0:
                         printf("Error in the predecessor channel (mensagem não reconhecida)\n"); 
                         break;
+                        break;
+                    
+                    //Recebemos um PRED
+                    case 3:
+                        succ2.id = atoi(messageArray[1]);
+                        strcpy(succ2.IP, messageArray[2]);
+                        succ2.TCP = atoi(messageArray[3]);
+                        break;
+                    case 5:
+                        //recebemos um ROUTE
+                        origin = atoi(messageArray[1]);
+                        destination = atoi(messageArray[2]);
+                        strcpy(path, messageArray[3]);
+
+                        //inicializar a tabela de encaminhamento
+                        if (RoutingTable[origin] == NULL)
+                        {
+                            RoutingTable[origin] = (char **)calloc(MAX_IDS, sizeof(char *));
+                            memoryCheck(RoutingTable[origin]);
+
+                            ShortestPathTable[origin] = (char *)calloc(MAX_PATH, sizeof(char));
+                            memoryCheck(ShortestPathTable[origin]);
+                        }
+
+                        //inicializar destino recebido pela tabela de encaminhamento
+                        if (RoutingTable[origin][destination] == NULL)
+                        {
+                            RoutingTable[origin][destination] = (char *)calloc(MAX_PATH, sizeof(char));
+                            memoryCheck(RoutingTable[origin][destination]);
+                        }
+
+                        if(path == NULL)
+                        {
+                            free(RoutingTable[origin][destination]);
+                            RoutingTable[origin][destination] = NULL;
+
+                            if(ShortestPathTable[destination] != NULL)
+                            {
+                                if(strcmp(ShortestPathTable[destination], RoutingTable[origin][destination]) != 0)
+                                {
+                                    for(int i = 0; i < MAX_NODES; i++)
+                                    {
+                                        if(RoutingTable[i][destination] != NULL)
+                                        {
+                                            if (strlen(RoutingTable[i][destination]) < strlen(ShortestPathTable[destination]))
+                                            {
+                                                strcpy(ShortestPathTable[destination], RoutingTable[i][destination]);
+                                                printf("Shortest path atualização: %s\n", ShortestPathTable[destination]);
+
+                                                bufferInit(message);
+                                                sprintf(message, "ROUTE %02d %02d %s\n", personal.id, destination, ShortestPathTable[destination]);
+
+                                                sendToAll(message, succ.fd, -1, chordPers.fd, chordList);
+
+                                                ExpeditionTable[destination] = pathArray[0];
+                                                printf ("ExpeditionTable[%d]: %d\n", destination, ExpeditionTable[destination]);
+                                            }
+                                        }
+                                    }
+
+                                }
+                            }
+                            break;
+                        }
+
+                        pathSteps = NULL;
+                        pathSteps = (char **)calloc(MAX_NODES, sizeof(char*));
+                        memoryCheck(pathSteps);
+
+                        stepsCount = 0;
+
+                        //dividir path em array
+                        messageTokenize(path, pathSteps, &stepsCount, 2);
+
+                        //converter array de strings em array de inteiros
+                        for (int i = 0; i < stepsCount; i++)
+                        {
+                            pathArray[i] = atoi(pathSteps[i]);
+                        }
+                        printf("Path: %s\n", path);
+                        printf("PathArray: %d\n", pathArray[0]);
+
+                        if (personalInPathCheck(origin, destination, pathArray, personal.id))
+                        {
+                            printf("Personal in path\n");
+                            break;
+                        }
+
+                        
+                        sprintf(path, "%02d-%s", personal.id, path);
+                        
+                        strcpy(RoutingTable[origin][destination], path);
+
+                        if (ShortestPathTable[destination] != NULL)
+                        {
+                            if (strlen(RoutingTable[origin][destination]) < strlen(ShortestPathTable[destination]))
+                            {
+                                strcpy(ShortestPathTable[destination], RoutingTable[origin][destination]);
+                                printf("Shortest path atualização: %s\n", ShortestPathTable[destination]);
+
+                                bufferInit(message);
+                                sprintf(message, "ROUTE %02d %02d %s\n", personal.id, destination, ShortestPathTable[destination]);
+                                
+                                sendToAll(message, succ.fd, -1, chordPers.fd, chordList);
+                                
+                                ExpeditionTable[destination] = pathArray[0];
+                                printf ("ExpeditionTable[%d]: %d\n", destination, ExpeditionTable[destination]);
+                            }
+                        }
+                        else
+                        {
+                            strcpy(ShortestPathTable[destination], RoutingTable[origin][destination]);
+                        }
+
+                        for (int i = 0; i < MAX_NODES; i++)
+                        {
+                            free(pathSteps[i]);
+                        }
+                        free(pathSteps);
+                        break;
                     default:
                         break;
                 }
@@ -618,6 +734,118 @@ int main(int argc, char *argv[])
                 {
                     case 0:
                         printf("Error in the chord channel (mensagem não reconhecida)\n"); 
+                        break;
+                    case 5:
+                        //recebemos um ROUTE
+                        origin = atoi(messageArray[1]);
+                        destination = atoi(messageArray[2]);
+                        strcpy(path, messageArray[3]);
+
+                        //inicializar a tabela de encaminhamento
+                        if (RoutingTable[origin] == NULL)
+                        {
+                            RoutingTable[origin] = (char **)calloc(MAX_IDS, sizeof(char *));
+                            memoryCheck(RoutingTable[origin]);
+
+                            ShortestPathTable[origin] = (char *)calloc(MAX_PATH, sizeof(char));
+                            memoryCheck(ShortestPathTable[origin]);
+                        }
+
+                        //inicializar destino recebido pela tabela de encaminhamento
+                        if (RoutingTable[origin][destination] == NULL)
+                        {
+                            RoutingTable[origin][destination] = (char *)calloc(MAX_PATH, sizeof(char));
+                            memoryCheck(RoutingTable[origin][destination]);
+                        }
+
+                        if(path == NULL)
+                        {
+                            free(RoutingTable[origin][destination]);
+                            RoutingTable[origin][destination] = NULL;
+
+                            if(ShortestPathTable[destination] != NULL)
+                            {
+                                if(strcmp(ShortestPathTable[destination], RoutingTable[origin][destination]) != 0)
+                                {
+                                    for(int i = 0; i < MAX_NODES; i++)
+                                    {
+                                        if(RoutingTable[i][destination] != NULL)
+                                        {
+                                            if (strlen(RoutingTable[i][destination]) < strlen(ShortestPathTable[destination]))
+                                            {
+                                                strcpy(ShortestPathTable[destination], RoutingTable[i][destination]);
+                                                printf("Shortest path atualização: %s\n", ShortestPathTable[destination]);
+
+                                                bufferInit(message);
+                                                sprintf(message, "ROUTE %02d %02d %s\n", personal.id, destination, ShortestPathTable[destination]);
+
+                                                sendToAll(message, succ.fd, pred.fd, -1, chordList);
+
+                                                ExpeditionTable[destination] = pathArray[0];
+                                                printf ("ExpeditionTable[%d]: %d\n", destination, ExpeditionTable[destination]);
+                                            }
+                                        }
+                                    }
+
+                                }
+                            }
+                            break;
+                        }
+
+                        pathSteps = NULL;
+                        pathSteps = (char **)calloc(MAX_NODES, sizeof(char*));
+                        memoryCheck(pathSteps);
+
+                        stepsCount = 0;
+
+                        //dividir path em array
+                        messageTokenize(path, pathSteps, &stepsCount, 2);
+
+                        //converter array de strings em array de inteiros
+                        for (int i = 0; i < stepsCount; i++)
+                        {
+                            pathArray[i] = atoi(pathSteps[i]);
+                        }
+                        printf("Path: %s\n", path);
+                        printf("PathArray: %d\n", pathArray[0]);
+
+                        if (personalInPathCheck(origin, destination, pathArray, personal.id))
+                        {
+                            printf("Personal in path\n");
+                            break;
+                        }
+
+                        
+                        sprintf(path, "%02d-%s", personal.id, path);
+                        
+                        strcpy(RoutingTable[origin][destination], path);
+
+                        if (ShortestPathTable[destination] != NULL)
+                        {
+                            if (strlen(RoutingTable[origin][destination]) < strlen(ShortestPathTable[destination]))
+                            {
+                                strcpy(ShortestPathTable[destination], RoutingTable[origin][destination]);
+                                printf("Shortest path atualização: %s\n", ShortestPathTable[destination]);
+
+                                bufferInit(message);
+                                sprintf(message, "ROUTE %02d %02d %s\n", personal.id, destination, ShortestPathTable[destination]);
+                                
+                                sendToAll(message, succ.fd, pred.fd, -1, chordList);
+                                
+                                ExpeditionTable[destination] = pathArray[0];
+                                printf ("ExpeditionTable[%d]: %d\n", destination, ExpeditionTable[destination]);
+                            }
+                        }
+                        else
+                        {
+                            strcpy(ShortestPathTable[destination], RoutingTable[origin][destination]);
+                        }
+
+                        for (int i = 0; i < MAX_NODES; i++)
+                        {
+                            free(pathSteps[i]);
+                        }
+                        free(pathSteps);
                         break;
                     default:
                         break;
@@ -667,6 +895,119 @@ int main(int argc, char *argv[])
                         case 0:
                             printf("Error in the chord channel (mensagem não reconhecida)\n"); 
                             break;
+                        case 5:
+                            //recebemos um ROUTE
+                            origin = atoi(messageArray[1]);
+                            destination = atoi(messageArray[2]);
+                            strcpy(path, messageArray[3]);
+
+                            //inicializar a tabela de encaminhamento
+                            if (RoutingTable[origin] == NULL)
+                            {
+                                RoutingTable[origin] = (char **)calloc(MAX_IDS, sizeof(char *));
+                                memoryCheck(RoutingTable[origin]);
+
+                                ShortestPathTable[origin] = (char *)calloc(MAX_PATH, sizeof(char));
+                                memoryCheck(ShortestPathTable[origin]);
+                            }
+
+                            //inicializar destino recebido pela tabela de encaminhamento
+                            if (RoutingTable[origin][destination] == NULL)
+                            {
+                                RoutingTable[origin][destination] = (char *)calloc(MAX_PATH, sizeof(char));
+                                memoryCheck(RoutingTable[origin][destination]);
+                            }
+
+                            if(path == NULL)
+                            {
+                                free(RoutingTable[origin][destination]);
+                                RoutingTable[origin][destination] = NULL;
+
+                                if(ShortestPathTable[destination] != NULL)
+                                {
+                                    if(strcmp(ShortestPathTable[destination], RoutingTable[origin][destination]) != 0)
+                                    {
+                                        for(int i = 0; i < MAX_NODES; i++)
+                                        {
+                                            if(RoutingTable[i][destination] != NULL)
+                                            {
+                                                if (strlen(RoutingTable[i][destination]) < strlen(ShortestPathTable[destination]))
+                                                {
+                                                    strcpy(ShortestPathTable[destination], RoutingTable[i][destination]);
+                                                    printf("Shortest path atualização: %s\n", ShortestPathTable[destination]);
+
+                                                    bufferInit(message);
+                                                    sprintf(message, "ROUTE %02d %02d %s\n", personal.id, destination, ShortestPathTable[destination]);
+
+                                                    sendToAll(message, succ.fd, pred.fd, -1, chordList);
+
+                                                    ExpeditionTable[destination] = pathArray[0];
+                                                    printf ("ExpeditionTable[%d]: %d\n", destination, ExpeditionTable[destination]);
+                                                }
+                                            }
+                                        }
+
+                                    }
+                                }
+                                break;
+                            }
+
+                            pathSteps = NULL;
+                            pathSteps = (char **)calloc(MAX_NODES, sizeof(char*));
+                            memoryCheck(pathSteps);
+
+                            stepsCount = 0;
+
+                            //dividir path em array
+                            messageTokenize(path, pathSteps, &stepsCount, 2);
+
+                            //converter array de strings em array de inteiros
+                            for (int i = 0; i < stepsCount; i++)
+                            {
+                                pathArray[i] = atoi(pathSteps[i]);
+                            }
+                            printf("Path: %s\n", path);
+                            printf("PathArray: %d\n", pathArray[0]);
+
+                            if (personalInPathCheck(origin, destination, pathArray, personal.id))
+                            {
+                                printf("Personal in path\n");
+                                break;
+                            }
+
+
+                            sprintf(path, "%02d-%s", personal.id, path);
+
+                            strcpy(RoutingTable[origin][destination], path);
+
+                            if (ShortestPathTable[destination] != NULL)
+                            {
+                                if (strlen(RoutingTable[origin][destination]) < strlen(ShortestPathTable[destination]))
+                                {
+                                    strcpy(ShortestPathTable[destination], RoutingTable[origin][destination]);
+                                    printf("Shortest path atualização: %s\n", ShortestPathTable[destination]);
+
+                                    bufferInit(message);
+                                    sprintf(message, "ROUTE %02d %02d %s\n", personal.id, destination, ShortestPathTable[destination]);
+
+                                    sendToAll(message, succ.fd, pred.fd, -1, chordList);
+
+                                    ExpeditionTable[destination] = pathArray[0];
+                                    printf ("ExpeditionTable[%d]: %d\n", destination, ExpeditionTable[destination]);
+                                }
+                            }
+                            else
+                            {
+                                strcpy(ShortestPathTable[destination], RoutingTable[origin][destination]);
+                            }
+
+                            for (int i = 0; i < MAX_NODES; i++)
+                            {
+                                free(pathSteps[i]);
+                            }
+                            free(pathSteps);
+                            break;
+                        
                         default:
                             break;
                     }

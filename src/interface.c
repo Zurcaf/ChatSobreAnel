@@ -378,7 +378,7 @@ void closingConnections(tcpServerInfo *succ, tcpServerInfo *succ2, tcpClientInfo
     }
 }
 
-void leave(int ring, udpServer server, tcpServerInfo *personal, tcpServerInfo *succ, tcpServerInfo *succ2, tcpClientInfo *pred, tcpServerInfo *chordClient, tcpClientInfo *chordServerList)
+void leave(int ring, udpServer server, tcpServerInfo *personal, tcpServerInfo *succ, tcpServerInfo *succ2, tcpClientInfo *pred, tcpServerInfo *chordClient, tcpClientInfo *chordServerList, char ***RoutingTable, char **ShortestPathTable)
 {
     char message[MAX_BUFFER];
 
@@ -392,7 +392,9 @@ void leave(int ring, udpServer server, tcpServerInfo *personal, tcpServerInfo *s
     if (succ->fd == personal->id)
     {
         return;
-    } 
+    }
+
+    freeTables(RoutingTable, ShortestPathTable);
 
     closingConnections(succ, succ2, pred, personal, chordClient, chordServerList);
     
