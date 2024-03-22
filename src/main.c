@@ -46,14 +46,14 @@ int main(int argc, char *argv[])
     // Tabela de expedição
     int ExpeditionTable[MAX_IDS];
 
-    //Nós no anel
-    int idNodesInRing[MAX_NODES];
-    int stepsCount = 0;
 
+    int stepsCount = 0;
     int origin, destination;
-    char path[MAX_PATH];
+
     int pathArray[MAX_PATH];
-    char** pathSteps = NULL;
+    char path[MAX_PATH];
+    char auxString[MAX_PATH];
+    char **pathSteps = NULL;
 
     //inicializar tabelas
     for (int i = 0; i < MAX_IDS; i++)
@@ -63,12 +63,8 @@ int main(int argc, char *argv[])
         ExpeditionTable[i] = -1;
     }
 
-    for (int i = 0; i < MAX_NODES; i++)
-    {
-        idNodesInRing[i] = -1;
-    }
 
-    int showDest;
+    int showDest=0;
     
 
     // ignorar o sinal SIGPIPE
@@ -170,29 +166,26 @@ int main(int argc, char *argv[])
                     if (argumentCount == 2)
                     {
                         showDest = atoi(arguments[1]);
-                        //showRouting();
                     }
                     else
                     {
                         showDest = atoi(arguments[2]);
-                        //showRouting();
                     }
+                    showRouting(RoutingTable, showDest);
                     break;
                 case 7:
                     if (argumentCount == 2)
                     {
                         showDest = atoi(arguments[1]);
-                        //showRouting();
                     }
                     else
                     {
                         showDest = atoi(arguments[2]);
-                        //showPath();
                     }
-                    //showPath();
+                    showPath(ShortestPathTable, showDest);
                     break;
                 case 8:
-                    //showForwarding();
+                    showForwarding(ExpeditionTable);
                     break;
                 case 9:
                     //message();
@@ -499,11 +492,11 @@ int main(int argc, char *argv[])
                             printf("Personal in path\n");
                             break;
                         }
-
                         
-                        sprintf(path, "%02d-%s", personal.id, path);
+                        sprintf (auxString, "%02d-", personal.id);
+                        strcat (auxString, path);
                         
-                        strcpy(RoutingTable[origin][destination], path);
+                        strcpy(RoutingTable[origin][destination], auxString);
 
                         if (ShortestPathTable[destination] != NULL)
                         {

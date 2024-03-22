@@ -1,17 +1,22 @@
 // Protocolo do encaminhamento
 #include "../hed/main.h"
+#include "../hed/encaminhamento.h"
+#include "../hed/interface.h"
+#include "../hed/auxFunc.h"
 
 // receber informação dos vizinhos
 bool personalInPathCheck(int destination, int *pathArray, int personal)
 {
-    for (int i = 1; pathArray[i] = destination, i++)
+    int i = 0;
+    while (pathArray[i] != personal)
     {
-        if (pathArray[i - 1] == personal)
+        if (pathArray[i] == destination)
         {
-            return true;
+            return false;
         }
+        i++;
     }
-    return false;
+    return true;
 }
 
 void freeTables(char ***RoutingTable, char **ShortestPathTable)
@@ -29,25 +34,25 @@ void freeTables(char ***RoutingTable, char **ShortestPathTable)
 
 void sendToAll(char* message, int succ_fd, int pred_fd, int chordPers_fd, tcpClientInfo *chordList)
 {
-    tcpClientInfo *chordAux;
+    tcpClientInfo *chordAux = NULL;
 
-    if (succ.fd != -1)
+    if (succ_fd != -1)
     {
-        tcpSend(pred.fd, message);
+        tcpSend(pred_fd, message);
     }
-    if (pred.fd != -1)
+    if (pred_fd != -1)
     {
-        tcpSend(pred.fd, message);
+        tcpSend(pred_fd, message);
     }
-    if(chordPers.fd != -1)
+    if(chordPers_fd != -1)
     {
-        tcpSend(chordPers.fd, message);
+        tcpSend(chordPers_fd, message);
     }
-    
+
     chordAux = chordList;
     while (chordList != NULL)
     {
-        tcpSend(chordList->fd, message);
-        chordList = chordList->next;
+        tcpSend(chordAux->fd, message);
+        chordAux = chordAux->next;
     }
 }
