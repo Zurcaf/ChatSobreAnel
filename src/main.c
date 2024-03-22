@@ -171,7 +171,7 @@ int main(int argc, char *argv[])
                     {
                         showDest = atoi(arguments[2]);
                     }
-                    showRouting(RoutingTable, showDest);
+                    showRouting(RoutingTable, showDest, succ.fd, pred.fd, chordPers.fd, chordList);
                     break;
                 case 7:
                     if (argumentCount == 2)
@@ -185,7 +185,7 @@ int main(int argc, char *argv[])
                     showPath(ShortestPathTable, showDest);
                     break;
                 case 8:
-                    showForwarding(ExpeditionTable);
+                    showFowarding(ExpeditionTable);
                     break;
                 case 9:
                     //message();
@@ -487,7 +487,7 @@ int main(int argc, char *argv[])
                         printf("Path: %s\n", path);
                         printf("PathArray: %d\n", pathArray[0]);
 
-                        if (personalInPathCheck(origin, destination, pathArray, personal.id))
+                        if (personalInPathCheck(destination, pathArray, personal.id))
                         {
                             printf("Personal in path\n");
                             break;
@@ -648,16 +648,17 @@ int main(int argc, char *argv[])
                         printf("Path: %s\n", path);
                         printf("PathArray: %d\n", pathArray[0]);
 
-                        if (personalInPathCheck(origin, destination, pathArray, personal.id))
+                        if (personalInPathCheck(destination, pathArray, personal.id))
                         {
                             printf("Personal in path\n");
                             break;
                         }
 
                         
-                        sprintf(path, "%02d-%s", personal.id, path);
+                        sprintf (auxString, "%02d-", personal.id);
+                        strcat (auxString, path);
                         
-                        strcpy(RoutingTable[origin][destination], path);
+                        strcpy(RoutingTable[origin][destination], auxString);
 
                         if (ShortestPathTable[destination] != NULL)
                         {
@@ -802,16 +803,17 @@ int main(int argc, char *argv[])
                         printf("Path: %s\n", path);
                         printf("PathArray: %d\n", pathArray[0]);
 
-                        if (personalInPathCheck(origin, destination, pathArray, personal.id))
+                        if (personalInPathCheck(destination, pathArray, personal.id))
                         {
                             printf("Personal in path\n");
                             break;
                         }
 
                         
-                        sprintf(path, "%02d-%s", personal.id, path);
+                        sprintf (auxString, "%02d-", personal.id);
+                        strcat (auxString, path);
                         
-                        strcpy(RoutingTable[origin][destination], path);
+                        strcpy(RoutingTable[origin][destination], auxString);
 
                         if (ShortestPathTable[destination] != NULL)
                         {
@@ -962,16 +964,17 @@ int main(int argc, char *argv[])
                             printf("Path: %s\n", path);
                             printf("PathArray: %d\n", pathArray[0]);
 
-                            if (personalInPathCheck(origin, destination, pathArray, personal.id))
+                            if (personalInPathCheck(destination, pathArray, personal.id))
                             {
                                 printf("Personal in path\n");
                                 break;
                             }
 
 
-                            sprintf(path, "%02d-%s", personal.id, path);
-
-                            strcpy(RoutingTable[origin][destination], path);
+                            sprintf (auxString, "%02d-", personal.id);
+                            strcat (auxString, path);
+                        
+                            strcpy(RoutingTable[origin][destination], auxString);
 
                             if (ShortestPathTable[destination] != NULL)
                             {

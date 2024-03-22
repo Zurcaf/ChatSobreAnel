@@ -14,10 +14,17 @@ void join(tcpServerInfo *personal, tcpServerInfo *succ, tcpServerInfo *succ2, tc
 
 void closingConnections(tcpServerInfo *succ, tcpServerInfo *succ2, tcpClientInfo *pred, tcpServerInfo *personal, tcpServerInfo *chordClient, tcpClientInfo *chordServerList);
 
-void leave(int ring, udpServer server, tcpServerInfo *personal, tcpServerInfo *succ, tcpServerInfo *succ2, tcpClientInfo *pred, tcpServerInfo *chordClient, tcpClientInfo *chordServerList);
+void leave(int ring, udpServer server, tcpServerInfo *personal, tcpServerInfo *succ, tcpServerInfo *succ2, tcpClientInfo *pred, tcpServerInfo *chordClient, tcpClientInfo *chordServerList, char ***RoutingTable, char **ShortestPathTable);
 
 void showTopology(tcpServerInfo personal, tcpServerInfo succ, tcpServerInfo succ2, tcpClientInfo pred, tcpServerInfo chordClient, tcpClientInfo *chordServerList);
 
 void chordServerInit(udpServer server, tcpClientInfo *chordList,  tcpServerInfo *chordPers, tcpClientInfo pred, tcpServerInfo succ, tcpServerInfo personal, int ring);
+
+void showRouting(char*** RoutingTable, int destination, int succ, int pred, int chordClient, tcpClientInfo *chordServerList);
+
+void showPath(char** ShortestPathTable, int destination);
+
+void showFowarding(int* ExpeditionTable);
+
 
 #endif

@@ -1,5 +1,6 @@
 #include "../hed/main.h"
 #include "../hed/auxFunc.h"
+#include "../hed/encaminhamento.h"
 
 int inputCheck(char* input, int *inputCount, char** inputArray)
 {
