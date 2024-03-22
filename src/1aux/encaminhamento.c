@@ -55,7 +55,7 @@ typedef struct {
 } RoutingTableEntry;
 
 // Tabela de encaminhamento
-RoutingTable RoutuingTableEntry[MAX_NODES][MAX_NODES];
+RoutingTable RoutingTableEntry[MAX_NODES][MAX_NODES];
 
 // Tabela de caminhos mais curtos
 ShortestPathTable RoutingTableEntry[MAX_NODES];
@@ -76,7 +76,7 @@ void initializeRoutingTable() {
 void initializeShortestPathTable() {
     for (int i = 0; i < MAX_NODES; i++) {
         for (int j = 0; j < MAX_NODES; j++) {
-            strcpy(ShortPathTable[i], "");
+            strcpy(ShortestPathTable[i], "");
         }
     }
     ShortestPathTable[personal] = personal;
@@ -91,26 +91,29 @@ void initializeExpeditionTable() {
 }
 
 // receber informação dos vizinhos
-void receiveRoutingInfo(int origin, int destination, int* pathArray) {
+void receiveRoutingInfo(int origin, int destination, int* pathArray, int personal) {
      
    for (int i = 1; pathArray[i] = destination, i++) {
-        if (pathArray[i-1] == origin) {
+        if (pathArray[i-1] == personal) {
             return;
         }
         else (updateTables(origin, destination, pathArray, personal));
 
 
    } 
+   return;
 }
 
 // atualizar as tabelas
 void updateTables(int origin, int destination, int *pathArray, int personal) {
 
+    int pathSize = 0;
    pathSize = sizeof(pathArray)/2;
    char* path = ArrayToString(pathArray, pathSize, personal)
 
    //Atualizar a tabela de encaminhamento
-        strcpy(RoutingTable[origin][destination], path);
+    strcpy(RoutingTable[origin][destination], path);
+
     //Atualizar a tabela de caminhos mais curtos
     int minHyphens = -1;
     char *minPath = NULL;
@@ -121,14 +124,14 @@ void updateTables(int origin, int destination, int *pathArray, int personal) {
         if (minHyphens == -1 || hyphens < minHyphens) {
             minHyphens = hyphens;
         }
-        if(RoutingTable[i] != "-")  {
-            minPath = RoutingTable[i];
-        }
+        
+        minPath = RoutingTable[i];
+        
         
     }
     
-    if(minPath != ShortPatrhTable[destination]){
-        strcpy(ShortPathTable[destination], minPath);
+    if(minPath != ShortestPathTable[destination]){
+        strcpy(ShortestPathTable[destination], minPath);
     }
 
     // Atualizar a tabela de expedição
@@ -190,7 +193,9 @@ void printExpeditionTable() {
 
 
 // // Enviar informações de encaminhamento para os vizinhos
-void sendRoutingInfo(int origin, int destination, int* pathArray) {}
+void sendRoutingInfo(int origin, int destination, int* pathArray) {
+    
+}
 
 
 
