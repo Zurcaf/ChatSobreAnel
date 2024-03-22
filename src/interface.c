@@ -580,7 +580,6 @@ void chordServerInit(udpServer server, tcpClientInfo *chordList,  tcpServerInfo 
     return;
 }
 
-
 void showRouting(char*** RoutingTable, int destination, int succ, int pred, int chordClient, tcpClientInfo *chordServerList)
 {
     tcpClientInfo *aux = chordServerList;
