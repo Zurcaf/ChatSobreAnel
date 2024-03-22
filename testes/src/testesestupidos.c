@@ -3,12 +3,12 @@
 // // #include <string.h>
 
 
-// // char* ArrayToString(int Arr[], int size) {
-// //     // Calculate the length of the resulting string
-// //     int total_length = size * 3; // 2 digits + 1 '-' separator for each element, plus 1 for the null terminator
-// //     char* result = malloc(total_length * sizeof(char));
-// //     if (result == NULL) {
-// //         printf("Memory allocation failed\n");
+// //  char* ArrayToString(int Arr[], int size) {
+// //      // Calculate the length of the resulting string
+// //      int total_length = size * 3; // 2 digits + 1 '-' separator for each element, plus 1 for the null terminator
+// //      char* result = malloc(total_length * sizeof(char));
+// //      if (result == NULL) {
+// //          printf("Memory allocation failed\n");
 // //         exit(1);
 // //     }
 // //     // Initialize the result string
