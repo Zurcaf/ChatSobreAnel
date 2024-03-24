@@ -27,7 +27,6 @@
 #define MAX_RESPONSE 1000
 #define INIT_IP "000000000000000"
 #define WAIT_TIME 10
-#define MAX_PATH 60
 
 #define MAX_PUT 100
 #define WORD_LEN_MAX 70

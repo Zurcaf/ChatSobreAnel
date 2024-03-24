@@ -1,6 +1,5 @@
 #include "../hed/main.h"
 #include "../hed/auxFunc.h"
-#include "../hed/encaminhamento.h"
 
 int inputCheck(char* input, int *inputCount, char** inputArray)
 {
@@ -28,8 +27,8 @@ int inputCheck(char* input, int *inputCount, char** inputArray)
         }
         
         fprintf(stderr, "ERROR: wrong format of the join arguments!\n");
-        fprintf(stderr, "\tring format: 000\n");
-        fprintf(stderr, "\tid format: 00\n");
+        fprintf(stderr, "\tring formate: 000\n");
+        fprintf(stderr, "\tid formate: 00\n");
         return (0);
     }
 
@@ -55,10 +54,10 @@ int inputCheck(char* input, int *inputCount, char** inputArray)
             }
         }
         fprintf(stderr, "ERROR: wrong format of the direct join arguments!\n");
-        fprintf(stderr, "\tid format: 00\n");
-        fprintf(stderr, "\tSucc id format: 00\n");
-        fprintf(stderr, "\tSucc IP format: 000.000.000.000\n");
-        fprintf(stderr, "\tSucc Port format: 00000\n");
+        fprintf(stderr, "\tid formate: 00\n");
+        fprintf(stderr, "\tSucc id formate: 00\n");
+        fprintf(stderr, "\tSucc IP formate: 000.000.000.000\n");
+        fprintf(stderr, "\tSucc Port formate: 00000\n");
 
         return 0;
 
@@ -96,67 +95,29 @@ int inputCheck(char* input, int *inputCount, char** inputArray)
 
     if (((strcmp(inputArray[0], "show") == 0) && strcmp(inputArray[1], "routing") == 0) || strcmp(inputArray[0], "sr") == 0)
     {
-        if (*inputCount != 2 && *inputCount != 3)
+        if (*inputCount != 2)
         {
             fprintf(stderr, "ERROR: wrong number of arguments for remove command!\n");
             return (0);
         }
-        
-        if (*inputCount == 2 && strlen(inputArray[1]) == 2)
-        {
-            if (isdigit(inputArray[1][0]) && isdigit(inputArray[1][1]))
-            {
-               return (6); 
-            }
-        }
-        if (*inputCount == 3 && strlen(inputArray[2]) == 2 )
-        {
-            if (isdigit(inputArray[2][0]) && isdigit(inputArray[2][1]))
-            {
-              return (6);  
-            }
-        }
-
-        fprintf(stderr, "ERROR: wrong format of the show routing arguments!\n");
-        fprintf(stderr, "\tdest format: 00\n");
-        fprintf(stderr, "\tsucc format: 00\n");
-        return (0);
+        return (6);
     }
 
     if(((strcmp(inputArray[0], "show") == 0) && strcmp(inputArray[1], "path") == 0) || strcmp(inputArray[0], "sp") == 0)
     {
-       if (*inputCount != 2 && *inputCount != 3)
+        if (*inputCount != 2)
         {
             fprintf(stderr, "ERROR: wrong number of arguments for remove command!\n");
             return (0);
         }
-        
-        if (*inputCount == 2 && strlen(inputArray[1]) == 2)
-        {
-            if (isdigit(inputArray[1][0]) && isdigit(inputArray[1][1]))
-            {
-               return (7); 
-            }
-        }
-        if (*inputCount == 3 && strlen(inputArray[2]) == 2 )
-        {
-            if (isdigit(inputArray[2][0]) && isdigit(inputArray[2][1]))
-            {
-              return (7);  
-            }
-        }
-
-        fprintf(stderr, "ERROR: wrong format of the show routing arguments!\n");
-        fprintf(stderr, "\tdest format: 00\n");
-        fprintf(stderr, "\tsucc format: 00\n");
-        return (0);
+        return (7);
     }
 
     if (((strcmp(inputArray[0], "show") == 0) && strcmp(inputArray[1], "forwarding") == 0) || strcmp(inputArray[0], "sf") == 0)
     {
         if (*inputCount != 1)
         {
-            fprintf(stderr, "ERROR: Wrong command format\n");
+            fprintf(stderr, "ERROR: wrong number of arguments for remove command!\n");
             return (0);
         }
         return (8);
@@ -417,7 +378,7 @@ void closingConnections(tcpServerInfo *succ, tcpServerInfo *succ2, tcpClientInfo
     }
 }
 
-void leave(int ring, udpServer server, tcpServerInfo *personal, tcpServerInfo *succ, tcpServerInfo *succ2, tcpClientInfo *pred, tcpServerInfo *chordClient, tcpClientInfo *chordServerList, char ***RoutingTable, char **ShortestPathTable)
+void leave(int ring, udpServer server, tcpServerInfo *personal, tcpServerInfo *succ, tcpServerInfo *succ2, tcpClientInfo *pred, tcpServerInfo *chordClient, tcpClientInfo *chordServerList)
 {
     char message[MAX_BUFFER];
 
@@ -431,9 +392,7 @@ void leave(int ring, udpServer server, tcpServerInfo *personal, tcpServerInfo *s
     if (succ->fd == personal->id)
     {
         return;
-    }
-
-    freeTables(RoutingTable, ShortestPathTable);
+    } 
 
     closingConnections(succ, succ2, pred, personal, chordClient, chordServerList);
     
@@ -578,50 +537,5 @@ void chordServerInit(udpServer server, tcpClientInfo *chordList,  tcpServerInfo 
     }
     free(nodes);
 
-    return;
-}
-
-void showRouting(char*** RoutingTable, int destination, int succ, int pred, int chordClient, tcpClientInfo *chordServerList)
-{
-    tcpClientInfo *aux = chordServerList;
-
-    printf("------------------------------------------------------------\n");
-    printf("Routing for %d \n", destination);
-    printf("------------------------------------------------------------\n");
-    printf("Neighbors\tPath");
-    printf("------------------------------------------------------------\n");
-    printf("%d\t%s\n", pred, RoutingTable[destination][pred]);
-    printf("%d\t%s\n", succ, RoutingTable[destination][succ]);
-    printf("%d\t%s\n", chordClient, RoutingTable[destination][chordClient]);
-    
-    while(aux != NULL)
-    {
-        printf("%d\t%s\n", aux->id, RoutingTable[destination][aux->id]);
-        aux = aux->next;
-    }
-    printf("------------------------------------------------------------\n");
-    return;
-}
-
-void showPath(char** ShortestPathTable, int destination)
-{
-    printf("------------------------------------------------------------\n");
-    printf("Shortest Path for %d \n", destination);
-    printf("------------------------------------------------------------\n");
-    printf("%s\n", ShortestPathTable[destination]);
-    printf("------------------------------------------------------------\n");
-    return;
-}
-
-void showFowarding(int* ExpeditionTable)
-{
-    printf("------------------------------------------------------------\n");
-    printf("Expedition Table\n");
-    printf("------------------------------------------------------------\n");
-    for (int i = 0; i < MAX_IDS; i++)
-    {
-        printf("Destination %d -> Next Node %d\n", i, ExpeditionTable[i]);
-    }
-    printf("------------------------------------------------------------\n");
     return;
 }
