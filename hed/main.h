@@ -27,6 +27,16 @@
 #define MAX_RESPONSE 1000
 #define INIT_IP "000000000000000"
 #define WAIT_TIME 10
+#define NeighborsIDsIndex 0
+#define DestinationIDsIndex 1
+#define persRowIndex 1
+#define persColIndex 2
+#define SHORTESTPATH_INDEX (MAX_NODES + 2)
+#define NEXTSTEP_INDEX (MAX_NODES + 3)
+#define NUMBER_OF_COLUMNS (MAX_NODES + 4)
+#define NUMBER_OF_ROWS (MAX_NODES + 1)
+#define MAX_NEIGHBORSIndex (MAX_NODES + 1)
+#define MAX_DESTINATIONSIndex (MAX_NODES)
 
 #define MAX_PUT 100
 #define WORD_LEN_MAX 70

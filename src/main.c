@@ -3,6 +3,7 @@
 #include "../hed/main.h"
 #include "../hed/auxFunc.h"
 #include "../hed/interface.h"
+#include "../hed/encaminhamento.h"
 
 int main(int argc, char *argv[])
 {
@@ -34,13 +35,17 @@ int main(int argc, char *argv[])
     
     tcpServerInfo chordPers;
     tcpClientInfo *chordList = NULL, *chordAux = NULL, *chordAux2 = NULL;
-    
+
+    int ***tables = NULL;
+    int neighborsFd[MAX_NODES];
+
     // ignorar o sinal SIGPIPE
     struct sigaction act;
 
     memset(&act,0,sizeof act);
     act.sa_handler=SIG_IGN;
     if(sigaction(SIGPIPE,&act,NULL)==-1)/*error*/exit(1);
+
     
     // Inicialização das estruturas
     inicializer(0, &server, &personal, &succ, &succ2, &pred, &chordPers);
@@ -48,12 +53,12 @@ int main(int argc, char *argv[])
     // Verifing the arguments passed to the application
     argsCheck(argc, argv, personal.IP, &personal.TCP, server.regIP, &server.regUDP);
 
-    printf("------------------------------------------------------------\n");
-    printf("Application COR invoked with the following parameters:\n");
-    printf("IP: %s\n", personal.IP);
-    printf("TCP: %d\n", personal.TCP);
-    printf("regIP: %s\n", server.regIP);
-    printf("regUDP: %d\n", server.regUDP);
+    // printf("------------------------------------------------------------\n");
+    // printf("Application COR invoked with the following parameters:\n");
+    // printf("IP: %s\n", personal.IP);
+    // printf("TCP: %d\n", personal.TCP);
+    // printf("regIP: %s\n", server.regIP);
+    // printf("regUDP: %d\n", server.regUDP);
     printf("------------------------------------------------------------\n");
     printf("Available comands:\njoin (j) ring id\ndirect join (dj) id succid succIP succTCP\nchord (c)\nremove chord (rc)\nshow topology (st)\nshow routing (sr) dest\nshow path (sp) dest\nshow forwarding (sf)\nmessage (m) dest message\nleave (l)\nexit (x)\n");
     printf("------------------------------------------------------------\n");
@@ -62,10 +67,9 @@ int main(int argc, char *argv[])
     while (running)
     {
         // Inicialização dos descritores para o select
-        SETs_Init(&readfds, &maxfd, personal.fd, succ.fd, succ2.fd, pred.fd, chordPers.fd, chordList);
+        SETs_Init(&readfds, &maxfd, personal.fd, succ.fd, pred.fd, chordPers.fd, chordList, neighborsFd);
 
         // Esperar por atividade com o select
-        // printf ("Espera por atividade\n");
         if (select(maxfd + 1, &readfds, NULL, NULL, NULL) == -1)
         {
             perror("select");
@@ -100,10 +104,18 @@ int main(int argc, char *argv[])
                     personal.id = atoi(arguments[2]);
 
                     join(&personal, &succ, &succ2, &pred, server, ring, &nodesInRing);
+                    
+                    initTables(&tables);
+                    initPersonalpath(tables, personal.id);
+
                     if (nodesInRing == 0)
                     {
                         newNode = false;
+                        break;
                     }
+                    
+                    routingSendAll (tables, succ.fd);
+
                     break;
                 case 2:
                     if (!newNode)
@@ -116,6 +128,10 @@ int main(int argc, char *argv[])
                     strcpy(succ.IP, arguments[3]);
                     succ.TCP = atoi(arguments[4]);
                     directJoin(personal, &succ, &pred, &succ2);
+
+                    initTables(&tables);
+                    initPersonalpath(tables, personal.id);
+                    newNode = false;
                     break;
                 case 3:
                     chordServerInit(server, chordList, &chordPers, pred, succ, personal, ring);
@@ -131,13 +147,13 @@ int main(int argc, char *argv[])
                     showTopology(personal, succ, succ2, pred, chordPers, chordList);
                     break;
                 case 6:
-                    //showRouting();
+                    showRouting(tables, atoi(arguments[1]));
                     break;
                 case 7:
-                    //showPath();
+                    showPath(tables, atoi(arguments[1]));
                     break;
                 case 8:
-                    //showForwarding();
+                    showForwarding(tables, personal.id);
                     break;
                 case 9:
                     //message();
@@ -151,13 +167,15 @@ int main(int argc, char *argv[])
                     else
                     {
                     leave(ring, server, &personal, &succ, &succ2, &pred, &chordPers, chordList);
+                    freeTables(tables);
                     newNode = true;
                     }
                     break;
                 case 11:
                     if (!newNode)
                     {
-                        leave(ring, server, &personal, &succ, &succ2, &pred, &chordPers, chordList);                        
+                        leave(ring, server, &personal, &succ, &succ2, &pred, &chordPers, chordList);
+                        freeTables(tables);                
                     }
                     running=false;
                     break;
@@ -212,6 +230,7 @@ int main(int argc, char *argv[])
                         
                         sprintf(message, "PRED %02d\n", personal.id);
                         tcpSend(succ.fd, message);
+
                     }
                     else
                     {
@@ -223,6 +242,9 @@ int main(int argc, char *argv[])
                         sprintf(message, "SUCC %02d %s %05d\n", succ.id, succ.IP, succ.TCP);
                         tcpSend(pred.fd, message);
                     }
+
+                    routingSendAll(tables, pred.fd);
+                    
                     break;
 
                 //caso seja um PRED
@@ -267,7 +289,7 @@ int main(int argc, char *argv[])
 
         if (FD_ISSET(succ.fd, &readfds))
         {
-            // printf("SUCC is set\n");
+            printf("SUCC is set\n");
 
             aux = tcpReceive(succ.fd, message);
 
@@ -352,9 +374,11 @@ int main(int argc, char *argv[])
                         succ2.id = atoi(messageArray[1]);
                         strcpy(succ2.IP, messageArray[2]);
                         succ2.TCP = atoi(messageArray[3]);
-                        
                         break;
-                    case 4:
+                    //recebemos um ROUTE
+                    case 5:
+                        routingRecive(tables, messageArray[3], atoi(messageArray[1]), atoi(messageArray[2]), personal.id);
+
                         break;
                     default:
                         break;
@@ -371,9 +395,10 @@ int main(int argc, char *argv[])
 
         if (FD_ISSET(pred.fd, &readfds))
         {
-            // printf("PRED is set\n");
+            printf("PRED is set\n");
 
             aux = tcpReceive(pred.fd, message);
+
             if (aux == 0)
             {
                 printf("Canal do predecessor fechado\n");
@@ -396,6 +421,10 @@ int main(int argc, char *argv[])
                 {
                     case 0:
                         printf("Error in the predecessor channel (mensagem não reconhecida)\n"); 
+                        break;
+                    //caso seja um ROUTE
+                    case 5:
+                        routingRecive(tables, messageArray[3], atoi(messageArray[1]), atoi(messageArray[2]), personal.id);
                         break;
                     default:
                         break;

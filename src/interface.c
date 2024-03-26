@@ -75,9 +75,9 @@ int inputCheck(char* input, int *inputCount, char** inputArray)
 
     if (((strcmp(inputArray[0], "remove") == 0) && strcmp(inputArray[1], "chord") == 0) || strcmp(inputArray[0], "rc") == 0)
     {
-        if (*inputCount != 1)
+        if (*inputCount != 1 && *inputCount != 2)
         {
-            fprintf(stderr, "ERROR: wrong number of arguments for remove command!\n");
+            fprintf(stderr, "ERROR: Command not recognized!\n");
             return (0);
         }
         return (4);
@@ -85,9 +85,9 @@ int inputCheck(char* input, int *inputCount, char** inputArray)
 
     if (((strcmp(inputArray[0], "show") == 0) && strcmp(inputArray[1], "topology") == 0) || strcmp(inputArray[0], "st") == 0)
     {
-        if (*inputCount != 1)
+        if (*inputCount != 1 && *inputCount != 2)
         {
-            fprintf(stderr, "ERROR: wrong number of arguments for remove command!\n");
+            fprintf(stderr, "ERROR: Command not recognized!\n");
             return (0);
         }
         return (5);
@@ -95,12 +95,30 @@ int inputCheck(char* input, int *inputCount, char** inputArray)
 
     if (((strcmp(inputArray[0], "show") == 0) && strcmp(inputArray[1], "routing") == 0) || strcmp(inputArray[0], "sr") == 0)
     {
-        if (*inputCount != 2)
+        if (*inputCount != 2 && *inputCount != 3)
         {
-            fprintf(stderr, "ERROR: wrong number of arguments for remove command!\n");
+            fprintf(stderr, "ERROR: Command not recognized!\n");
             return (0);
         }
-        return (6);
+        
+        if (*inputCount == 2 && strlen(inputArray[1]) == 2)
+        {
+            if (isdigit(inputArray[1][0]) && isdigit(inputArray[1][1]))
+            {
+               return (6); 
+            }
+        }
+        if (*inputCount == 3 && strlen(inputArray[2]) == 2 )
+        {
+            if (isdigit(inputArray[2][0]) && isdigit(inputArray[2][1]))
+            {
+              return (6);  
+            }
+        }
+
+        fprintf(stderr, "ERROR: wrong format of the show routing arguments!\n");
+        fprintf(stderr, "\tdest format: 00\n");
+        return (0);
     }
 
     if(((strcmp(inputArray[0], "show") == 0) && strcmp(inputArray[1], "path") == 0) || strcmp(inputArray[0], "sp") == 0)
@@ -233,8 +251,11 @@ void directJoin(tcpServerInfo personal, tcpServerInfo *Succ, tcpClientInfo *pred
     tcpClientInit(Succ);
 
     sprintf(message, "ENTRY %02d %s %05d\n", personal.id, personal.IP, personal.TCP);
+ 
 
     tcpSend(Succ->fd, message);
+
+
 
     return;
 }

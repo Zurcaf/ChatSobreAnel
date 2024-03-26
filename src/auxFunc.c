@@ -252,6 +252,9 @@ void nodeServSend (udpServer server, char* buffer, int counter)
     close(fd);
 }
 
+//mode 0 -> \n
+//mode 1 -> " "
+//mode 2 -> "-"
 void messageTokenize(char *message, char **inputArray, int *inputCount, int mode)
 {
     char *token = NULL, buffer[MAX_BUFFER];
@@ -264,9 +267,12 @@ void messageTokenize(char *message, char **inputArray, int *inputCount, int mode
     {
         token = strtok(buffer, "\n");
     }
-    else
+    else if (mode == 1)
     {
         token = strtok(buffer, " ");
+    }else if (mode == 2)
+    {
+        token = strtok(buffer, "-");
     }
 
     while (*inputCount < MAX_ARGUMENTS && token != NULL)
@@ -282,11 +288,13 @@ void messageTokenize(char *message, char **inputArray, int *inputCount, int mode
         {
             token = strtok(NULL, "\n");
         }
-        else
+        else if (mode == 1)
         {
             token = strtok(NULL, " ");
+        }else if (mode == 2)
+        {
+            token = strtok(NULL, "-");
         }
-
     }
     inputArray[*inputCount] = NULL;
 
@@ -301,8 +309,15 @@ void messageTokenize(char *message, char **inputArray, int *inputCount, int mode
     }
 }
 
-void SETs_Init(fd_set *readfds, int *maxfd, int personal_fd, int succ_fd, int succ2_fd, int pred_fd, int chord_fd, tcpClientInfo *chordServerList)
+void SETs_Init(fd_set *readfds, int *maxfd, int personal_fd, int succ_fd, int pred_fd, int chord_fd, tcpClientInfo *chordServerList, int* neighboursFd)
 {
+        int i = 0;
+
+        for (int j = 0; j < MAX_NODES; j++)
+        {
+            neighboursFd[j] = -1;
+        }
+        
         tcpClientInfo *chordAux = chordServerList;
 
         FD_ZERO(readfds);  // Limpa o conjunto de descritores
@@ -317,24 +332,24 @@ void SETs_Init(fd_set *readfds, int *maxfd, int personal_fd, int succ_fd, int su
         {
             FD_SET(succ_fd, readfds);  // Adiciona o descritor do socket
             *maxfd = (succ_fd > *maxfd) ? succ_fd : *maxfd;
-        }
-
-        if (succ2_fd != -1)
-        {
-            FD_SET(succ2_fd, readfds);  // Adiciona o descritor do socket
-            *maxfd = (succ2_fd >*maxfd) ? succ2_fd :*maxfd;
+            neighboursFd[i] = succ_fd;
+            i++;
         }
 
         if (pred_fd != -1)
         {
             FD_SET(pred_fd, readfds);  // Adiciona o descritor do socket
            *maxfd = (pred_fd >*maxfd) ? pred_fd :*maxfd;
+            neighboursFd[i] = pred_fd;
+            i++;
         }
 
         if (chord_fd != -1)
         {
             FD_SET(chord_fd, readfds);  // Adiciona o descritor do socket
             *maxfd = (chord_fd >*maxfd) ? chord_fd :*maxfd;
+            neighboursFd[i] = chord_fd;
+            i++;
         }
 
         while(chordAux != NULL)
@@ -342,6 +357,9 @@ void SETs_Init(fd_set *readfds, int *maxfd, int personal_fd, int succ_fd, int su
             FD_SET(chordAux->fd, readfds);  // Adiciona o descritor do socket
             *maxfd = (chordAux->fd >*maxfd) ? chordAux->fd :*maxfd;
             chordAux = chordAux->next;
+
+            neighboursFd[i] = chordAux->fd;
+            i++;
         }   
         
 
